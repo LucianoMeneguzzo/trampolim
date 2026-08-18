@@ -1,0 +1,1164 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14161C">
+  <title>Trampolim — protótipo visual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #14161c;
+      --ink-card: #1a1d26;
+      --ink-raised: #20232e;
+      --paper: #f2f0e9;
+      --paper-bright: #fbfaf6;
+      --paper-muted: #e7e3d9;
+      --amber: #e8a33d;
+      --amber-soft: #f8e7c7;
+      --sage: #6b9080;
+      --sage-soft: #dce8e2;
+      --red: #bf6154;
+      --ink-soft: #9a9dab;
+      --line: #2d303b;
+      --paper-line: #d8d4ca;
+      --paper-ink: #181a20;
+      --shadow: 0 18px 45px rgba(10, 11, 15, .18);
+      --display: "Space Grotesk", Inter, sans-serif;
+      --body: Inter, Arial, sans-serif;
+      --mono: "JetBrains Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: #0d0f14; scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--paper);
+      background:
+        radial-gradient(circle at 66% -12%, rgba(232, 163, 61, .15), transparent 29rem),
+        linear-gradient(180deg, #111319, #0d0f14);
+      font-family: var(--body);
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(232, 163, 61, .65);
+      outline-offset: 3px;
+    }
+    .prototype {
+      width: min(1440px, calc(100% - 32px));
+      margin: 28px auto;
+      min-height: 860px;
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      overflow: hidden;
+      border: 1px solid #333641;
+      border-radius: 20px;
+      background: var(--ink);
+      box-shadow: 0 32px 90px rgba(0, 0, 0, .42);
+    }
+    .rail {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 26px 16px 18px;
+      border-right: 1px solid var(--line);
+      background: rgba(18, 20, 26, .82);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px 28px;
+      color: var(--paper);
+      text-decoration: none;
+      font-family: var(--display);
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -.045em;
+    }
+    .brand-mark {
+      display: grid;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      border-radius: 7px;
+      color: var(--ink);
+      background: var(--amber);
+      font-family: var(--display);
+      font-size: 17px;
+      line-height: 1;
+    }
+    .eyebrow, .micro-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+    .eyebrow { color: var(--ink-soft); padding: 0 10px 10px; }
+    .screen-nav {
+      display: grid;
+      gap: 3px;
+    }
+    .screen-nav button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border: 0;
+      border-radius: 8px;
+      color: var(--ink-soft);
+      background: transparent;
+      text-align: left;
+      font-size: 13px;
+      transition: background .15s ease, color .15s ease;
+    }
+    .screen-nav button:hover { background: rgba(255,255,255,.055); color: var(--paper); }
+    .screen-nav button.is-active { color: var(--ink); background: var(--amber); font-weight: 700; }
+    .nav-no {
+      flex: 0 0 24px;
+      color: currentColor;
+      font-family: var(--mono);
+      font-size: 10px;
+      opacity: .76;
+    }
+    .rail-note {
+      margin-top: auto;
+      padding: 18px 10px 0;
+      border-top: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+    .rail-note strong { display: block; margin-bottom: 4px; color: var(--paper); font-size: 12px; }
+    .canvas {
+      position: relative;
+      min-width: 0;
+      background: var(--ink);
+    }
+    .screen {
+      display: none;
+      min-height: 858px;
+      animation: enter .24s ease both;
+    }
+    .screen.is-active { display: block; }
+    @keyframes enter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .topbar {
+      min-height: 75px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 17px clamp(24px, 4vw, 56px);
+      border-bottom: 1px solid var(--line);
+    }
+    .crumb {
+      color: var(--ink-soft);
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+    .crumb b { color: var(--paper); font-weight: 500; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      display: grid;
+      width: 31px;
+      height: 31px;
+      place-items: center;
+      border: 1px solid #515561;
+      border-radius: 50%;
+      color: var(--paper);
+      background: #343844;
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+    .plain-link {
+      padding: 7px;
+      border: 0;
+      color: var(--ink-soft);
+      background: transparent;
+      font-size: 12px;
+    }
+    .plain-link:hover { color: var(--paper); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      font-weight: 700;
+      font-size: 13px;
+      text-decoration: none;
+      transition: transform .15s ease, opacity .15s ease, background .15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { color: var(--ink); background: var(--amber); }
+    .btn-primary:hover { background: #f2b452; }
+    .btn-dark { color: var(--paper); background: var(--ink); }
+    .btn-dark:hover { background: #2a2d37; }
+    .btn-outline { border-color: #505460; color: var(--paper); background: transparent; }
+    .btn-outline:hover { background: rgba(255,255,255,.06); }
+    .btn-sage { color: var(--paper); background: #49695c; }
+    .btn-sage:hover { background: #587b6d; }
+    .btn-small { min-height: 34px; padding: 0 12px; font-size: 12px; }
+    .arrow { font-size: 17px; line-height: 1; }
+    .tag, .status, .level, .date-tag {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .015em;
+      white-space: nowrap;
+    }
+    .tag { padding: 6px 8px; color: #bfc3ce; border: 1px solid #3d414e; background: #20232c; }
+    .tag.light { color: #555961; border-color: var(--paper-line); background: var(--paper-bright); }
+    .tag.amber { color: #8a5814; border-color: #efcb91; background: var(--amber-soft); }
+    .tag.sage { color: #365d50; border-color: #b9d2c7; background: var(--sage-soft); }
+    .status { gap: 6px; padding: 6px 9px; color: #a7c7b9; background: rgba(107,144,128,.14); }
+    .status::before { width: 6px; height: 6px; border-radius: 50%; background: var(--sage); content: ""; }
+    .status.amber-status { color: #ffc979; background: rgba(232,163,61,.14); }
+    .status.amber-status::before { background: var(--amber); }
+    .surface-paper { color: var(--paper-ink); background: var(--paper); }
+    .surface-paper .topbar { border-color: var(--paper-line); }
+    .surface-paper .crumb { color: #787a7f; }
+    .surface-paper .crumb b { color: var(--paper-ink); }
+    .surface-paper .plain-link { color: #63666d; }
+    .surface-paper .plain-link:hover { color: var(--paper-ink); }
+    .surface-paper .avatar { color: var(--paper-ink); border-color: var(--paper-line); background: #e5e1d6; }
+    .page-pad { padding: 46px clamp(24px, 4vw, 56px) 64px; }
+    .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
+    .page-header h1, .page-header h2, .heading {
+      margin: 0;
+      font-family: var(--display);
+      font-weight: 700;
+      letter-spacing: -.052em;
+    }
+    .page-header h1 { font-size: clamp(29px, 3.3vw, 43px); line-height: 1; }
+    .page-header p { max-width: 530px; margin: 10px 0 0; color: #676a70; font-size: 14px; line-height: 1.65; }
+    .page-header .right-caption { color: #777a80; font-size: 12px; text-align: right; }
+    .muted { color: var(--ink-soft); }
+    .paper-muted { color: #6a6c72; }
+    .home-shell { overflow: hidden; }
+    .home-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 25px clamp(24px, 5vw, 70px);
+    }
+    .home-nav-links { display: flex; align-items: center; gap: 25px; }
+    .home-nav-links button { border: 0; padding: 0; color: var(--ink-soft); background: transparent; font-size: 12px; }
+    .home-nav-links button:hover { color: var(--paper); }
+    .home-hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.04fr) minmax(330px, .96fr);
+      align-items: center;
+      gap: clamp(30px, 6vw, 90px);
+      min-height: 485px;
+      padding: 56px clamp(24px, 5vw, 70px) 72px;
+    }
+    .home-hero:before {
+      position: absolute;
+      z-index: 0;
+      width: 620px;
+      height: 620px;
+      right: -260px;
+      top: -200px;
+      border: 1px solid rgba(232,163,61,.11);
+      border-radius: 50%;
+      content: "";
+    }
+    .home-copy, .home-proof { position: relative; z-index: 1; }
+    .home-copy .micro-label { color: var(--amber); }
+    .home-copy h1 {
+      max-width: 700px;
+      margin: 14px 0 22px;
+      font-family: var(--display);
+      font-size: clamp(41px, 5.2vw, 70px);
+      font-weight: 700;
+      letter-spacing: -.072em;
+      line-height: .99;
+    }
+    .home-copy h1 span { color: var(--amber); }
+    .home-copy p { max-width: 540px; margin: 0; color: var(--ink-soft); font-size: 16px; line-height: 1.7; }
+    .home-ctas { display: flex; flex-wrap: wrap; gap: 11px; margin-top: 30px; }
+    .trustline { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 28px; color: var(--ink-soft); font-size: 11px; }
+    .trustline .line { width: 32px; height: 1px; background: #4d505c; }
+    .proof-card {
+      max-width: 414px;
+      margin-left: auto;
+      padding: 20px;
+      border: 1px solid #373b47;
+      border-radius: 13px;
+      background: linear-gradient(145deg, #20232d, #191c25);
+      box-shadow: var(--shadow);
+    }
+    .proof-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+    .proof-kicker { margin-bottom: 5px; color: var(--ink-soft); font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; }
+    .proof-title { font-family: var(--display); font-size: 18px; font-weight: 600; letter-spacing: -.03em; }
+    .mini-avatar { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 50%; color: var(--ink); background: var(--amber); font-family: var(--mono); font-size: 10px; }
+    .activity-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 7px;
+      margin-bottom: 17px;
+    }
+    .activity-grid i { aspect-ratio: 1; min-height: 16px; border-radius: 3px; background: #303440; }
+    .activity-grid i.s1 { background: #3d414f; }
+    .activity-grid i.s2 { background: #597766; }
+    .activity-grid i.s3 { background: var(--amber); }
+    .activity-legend { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--ink-soft); font-family: var(--mono); font-size: 10px; }
+    .activity-key { display: flex; align-items: center; gap: 4px; }
+    .activity-key b { width: 8px; height: 8px; border-radius: 2px; background: #303440; }
+    .activity-key b:nth-child(2) { background: #3d414f; }
+    .activity-key b:nth-child(3) { background: #597766; }
+    .activity-key b:nth-child(4) { background: var(--amber); }
+    .home-strip {
+      display: grid;
+      grid-template-columns: 1.2fr repeat(3, 1fr);
+      gap: 0;
+      border-top: 1px solid #2d303b;
+      background: #171920;
+    }
+    .home-strip > div { min-height: 126px; padding: 23px clamp(18px, 2.6vw, 38px); border-right: 1px solid #2d303b; }
+    .home-strip > div:last-child { border-right: 0; }
+    .home-strip .intro { color: var(--paper); font-family: var(--display); font-size: 17px; line-height: 1.2; letter-spacing: -.035em; }
+    .step-no { display: block; margin-bottom: 9px; color: var(--amber); font-family: var(--mono); font-size: 10px; }
+    .step-title { display: block; margin-bottom: 5px; font-size: 12px; font-weight: 700; }
+    .step-copy { color: var(--ink-soft); font-size: 11px; line-height: 1.5; }
+    .login-wrap {
+      min-height: 858px;
+      display: grid;
+      grid-template-columns: minmax(320px, .92fr) minmax(420px, 1.08fr);
+    }
+    .auth-visual {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 43px clamp(28px, 4vw, 56px);
+      background: var(--ink);
+    }
+    .auth-visual .brand { padding: 0; }
+    .auth-quote { max-width: 445px; padding: 55px 0; }
+    .auth-quote .micro-label { color: var(--amber); }
+    .auth-quote h1 {
+      margin: 14px 0 18px;
+      font-family: var(--display);
+      font-size: clamp(37px, 4.5vw, 60px);
+      line-height: 1;
+      letter-spacing: -.07em;
+    }
+    .auth-quote h1 span { color: var(--amber); }
+    .auth-quote p { margin: 0; color: var(--ink-soft); font-size: 14px; line-height: 1.7; }
+    .auth-example { max-width: 380px; padding: 17px; border: 1px solid var(--line); border-radius: 10px; background: var(--ink-card); }
+    .auth-example p { margin: 0 0 11px; color: var(--paper); font-size: 13px; line-height: 1.5; }
+    .auth-example .who { color: var(--ink-soft); font-family: var(--mono); font-size: 10px; }
+    .auth-form-side {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 46px clamp(28px, 5vw, 76px);
+      color: var(--paper-ink);
+      background: var(--paper);
+    }
+    .auth-form { width: min(100%, 400px); }
+    .auth-form h2 { margin: 0; font-family: var(--display); font-size: 32px; letter-spacing: -.055em; }
+    .auth-form > p { margin: 9px 0 27px; color: #6a6c72; font-size: 13px; line-height: 1.6; }
+    .role-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 23px; }
+    .role-switch button { min-height: 77px; padding: 11px; border: 1px solid var(--paper-line); border-radius: 8px; color: #686b72; background: var(--paper-bright); text-align: left; transition: border-color .15s ease, background .15s ease; }
+    .role-switch button.is-active { border-color: #b57d29; color: var(--paper-ink); background: var(--amber-soft); }
+    .role-switch strong { display: block; margin-bottom: 4px; font-size: 13px; }
+    .role-switch small { display: block; font-size: 10px; line-height: 1.35; }
+    .field { display: grid; gap: 7px; margin-bottom: 15px; }
+    .field label { color: #50535a; font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; }
+    .field input, .field textarea, .field select {
+      width: 100%;
+      border: 1px solid var(--paper-line);
+      border-radius: 7px;
+      color: var(--paper-ink);
+      background: var(--paper-bright);
+    }
+    .field input, .field select { height: 45px; padding: 0 13px; font-size: 13px; }
+    .field textarea { min-height: 104px; padding: 12px 13px; resize: vertical; font-size: 13px; line-height: 1.55; }
+    .field input::placeholder, .field textarea::placeholder { color: #a2a3a5; }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color: #b8802e; outline: 2px solid rgba(232, 163, 61, .22); outline-offset: 0; }
+    .auth-submit { width: 100%; margin-top: 6px; }
+    .form-footnote { margin: 16px 0 0; color: #77797f; font-size: 11px; line-height: 1.5; text-align: center; }
+    .text-button { border: 0; color: #9a6517; background: transparent; font-weight: 700; }
+    .challenge-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .search-box {
+      position: relative;
+      flex: 1;
+    }
+    .search-box span { position: absolute; left: 13px; top: 50%; color: #81838a; transform: translateY(-50%); }
+    .search-box input { width: 100%; height: 43px; padding: 0 14px 0 37px; border: 1px solid var(--paper-line); border-radius: 7px; color: var(--paper-ink); background: var(--paper-bright); font-size: 13px; }
+    .filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 27px; }
+    .filter-row .filter-label { margin-right: 2px; color: #75777c; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+    .filter {
+      padding: 7px 10px;
+      border: 1px solid var(--paper-line);
+      border-radius: 999px;
+      color: #60636a;
+      background: var(--paper-bright);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+    .filter:hover { border-color: #b1aaa0; }
+    .filter.is-selected { border-color: #d29a42; color: #7f4f12; background: var(--amber-soft); }
+    .result-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 0 0 15px; }
+    .result-heading h2 { margin: 0; font-family: var(--display); font-size: 20px; letter-spacing: -.035em; }
+    .result-heading span { color: #7b7d83; font-family: var(--mono); font-size: 10px; }
+    .challenge-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .challenge-card {
+      display: flex;
+      min-height: 252px;
+      flex-direction: column;
+      padding: 19px;
+      border: 1px solid var(--paper-line);
+      border-radius: 10px;
+      background: var(--paper-bright);
+      box-shadow: 0 5px 12px rgba(22, 25, 29, .025);
+      transition: transform .16s ease, border-color .16s ease;
+    }
+    .challenge-card:hover { border-color: #b8b2a6; transform: translateY(-2px); }
+    .challenge-card .card-top, .detail-mentor { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .challenge-card h3 { margin: 18px 0 9px; font-family: var(--display); font-size: 20px; line-height: 1.08; letter-spacing: -.045em; }
+    .challenge-card p { margin: 0; color: #6c6e74; font-size: 12px; line-height: 1.55; }
+    .card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 15px; }
+    .card-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 17px; color: #777a80; font-family: var(--mono); font-size: 10px; }
+    .mini-action { border: 0; color: #8a5914; background: transparent; font-size: 12px; font-weight: 700; }
+    .detail-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(270px, .65fr); gap: 38px; }
+    .detail-main { min-width: 0; }
+    .back-link { display: inline-flex; gap: 7px; margin-bottom: 24px; border: 0; padding: 0; color: #777a80; background: transparent; font-size: 12px; }
+    .back-link:hover { color: var(--paper-ink); }
+    .detail-heading h1 { max-width: 680px; margin: 10px 0 15px; font-family: var(--display); font-size: clamp(34px, 4.2vw, 55px); line-height: .99; letter-spacing: -.065em; }
+    .detail-summary { max-width: 720px; color: #676a71; font-size: 15px; line-height: 1.7; }
+    .detail-section { padding: 29px 0; border-top: 1px solid var(--paper-line); }
+    .detail-section h2 { margin: 0 0 13px; font-family: var(--display); font-size: 18px; letter-spacing: -.035em; }
+    .detail-section p { margin: 0; color: #5f626a; font-size: 13px; line-height: 1.7; }
+    .deliverable-list { display: grid; gap: 10px; margin: 16px 0 0; padding: 0; list-style: none; }
+    .deliverable-list li { display: flex; align-items: flex-start; gap: 9px; color: #54575e; font-size: 13px; line-height: 1.5; }
+    .check { flex: 0 0 auto; width: 17px; height: 17px; display: grid; place-items: center; margin-top: 1px; border-radius: 50%; color: #396052; background: var(--sage-soft); font-size: 10px; }
+    .detail-side { align-self: start; padding: 20px; border: 1px solid var(--paper-line); border-radius: 10px; background: var(--paper-bright); }
+    .detail-side h3 { margin: 0 0 17px; font-family: var(--display); font-size: 18px; letter-spacing: -.04em; }
+    .detail-stats { display: grid; gap: 13px; padding: 0 0 18px; margin-bottom: 18px; border-bottom: 1px solid var(--paper-line); }
+    .detail-stat { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+    .detail-stat span { color: #777a80; font-size: 11px; }
+    .detail-stat strong { color: #353840; font-family: var(--mono); font-size: 11px; font-weight: 500; text-align: right; }
+    .mentor-chip { display: flex; align-items: center; gap: 10px; padding: 4px 0; margin: 17px 0 19px; }
+    .mentor-image { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; color: #6b4613; background: #efd9b5; font-size: 11px; font-weight: 700; }
+    .mentor-chip strong, .mentor-chip small { display: block; }
+    .mentor-chip strong { color: #3f4148; font-size: 12px; }
+    .mentor-chip small { margin-top: 2px; color: #81838a; font-size: 10px; }
+    .detail-side .btn { width: 100%; }
+    .side-note { margin: 12px 0 0; color: #7a7c82; font-size: 10px; line-height: 1.5; text-align: center; }
+    .workflow {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      margin: 0 0 34px;
+      overflow: hidden;
+    }
+    .workflow-step { position: relative; min-width: 106px; padding-top: 26px; color: #888b92; font-size: 11px; }
+    .workflow-step::before { position: absolute; z-index: 1; top: 0; left: 0; width: 12px; height: 12px; border: 3px solid var(--paper); border-radius: 50%; background: #c4c1b9; content: ""; }
+    .workflow-step::after { position: absolute; top: 5px; left: 12px; width: calc(100% - 12px); height: 2px; background: #d3d0c7; content: ""; }
+    .workflow-step:last-child::after { display: none; }
+    .workflow-step.done { color: #416a5b; font-weight: 700; }
+    .workflow-step.done::before { background: var(--sage); }
+    .workflow-step.active { color: #8c5712; font-weight: 700; }
+    .workflow-step.active::before { background: var(--amber); }
+    .send-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(270px, .7fr); gap: 36px; }
+    .send-card { padding: clamp(21px, 3vw, 31px); border: 1px solid var(--paper-line); border-radius: 12px; background: var(--paper-bright); }
+    .send-card h2 { margin: 0 0 8px; font-family: var(--display); font-size: 24px; letter-spacing: -.045em; }
+    .send-card > p { margin: 0 0 25px; color: #707278; font-size: 13px; line-height: 1.6; }
+    .repo-input { position: relative; display: flex; margin-bottom: 11px; }
+    .repo-input span { display: grid; flex: 0 0 43px; height: 45px; place-items: center; border: 1px solid #b8d1c4; border-right: 0; border-radius: 7px 0 0 7px; color: #3d6858; background: var(--sage-soft); }
+    .repo-input input { min-width: 0; flex: 1; height: 45px; padding: 0 12px; border: 1px solid #b8d1c4; border-radius: 0 7px 7px 0; color: #3c4148; background: #f9fcfa; font-family: var(--mono); font-size: 11px; }
+    .valid-message { display: flex; align-items: center; gap: 7px; color: #477363; font-size: 11px; }
+    .valid-message i { display: grid; width: 16px; height: 16px; place-items: center; border-radius: 50%; color: var(--paper); background: var(--sage); font-style: normal; font-size: 10px; }
+    .repo-data { display: grid; grid-template-columns: repeat(3, 1fr); margin: 26px 0; border-top: 1px solid var(--paper-line); border-bottom: 1px solid var(--paper-line); }
+    .repo-data div { padding: 16px 11px; border-right: 1px solid var(--paper-line); }
+    .repo-data div:first-child { padding-left: 0; }
+    .repo-data div:last-child { border-right: 0; }
+    .repo-data span { display: block; margin-bottom: 5px; color: #81838a; font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: .06em; }
+    .repo-data strong { color: #464950; font-size: 12px; }
+    .send-help { padding: 21px; border-radius: 10px; color: var(--paper); background: var(--ink-card); }
+    .send-help .micro-label { color: var(--amber); }
+    .send-help h3 { margin: 10px 0 9px; font-family: var(--display); font-size: 19px; letter-spacing: -.04em; }
+    .send-help p { margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.65; }
+    .send-help .tip-list { display: grid; gap: 10px; margin: 19px 0 0; }
+    .send-help .tip { display: flex; gap: 8px; color: #c5c7ce; font-size: 11px; line-height: 1.45; }
+    .tip-dot { flex: 0 0 6px; width: 6px; height: 6px; margin-top: 5px; border-radius: 50%; background: var(--amber); }
+    .create-layout { display: grid; grid-template-columns: minmax(0, 1fr) 245px; gap: 35px; }
+    .form-card { padding: clamp(20px, 3vw, 32px); border: 1px solid var(--paper-line); border-radius: 12px; background: var(--paper-bright); }
+    .form-card .field:last-of-type { margin-bottom: 0; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field-row.thirds { grid-template-columns: 1.1fr 1fr .7fr; }
+    .chips-input { display: flex; align-items: center; min-height: 45px; gap: 6px; padding: 6px; border: 1px solid var(--paper-line); border-radius: 7px; background: var(--paper-bright); }
+    .chips-input input { min-width: 70px; flex: 1; height: 28px; padding: 0 4px; border: 0; outline: 0; background: transparent; font-size: 12px; }
+    .create-aside { align-self: start; }
+    .publish-guide { padding: 18px; border: 1px solid var(--paper-line); border-radius: 10px; background: #e9e5db; }
+    .publish-guide h3 { margin: 0 0 14px; font-family: var(--display); font-size: 16px; letter-spacing: -.035em; }
+    .guide-item { display: flex; gap: 9px; margin-top: 12px; color: #65676d; font-size: 11px; line-height: 1.45; }
+    .guide-number { display: grid; flex: 0 0 18px; width: 18px; height: 18px; place-items: center; border-radius: 50%; color: #705017; background: var(--amber-soft); font-family: var(--mono); font-size: 9px; }
+    .draft-note { margin: 14px 2px 0; color: #85878c; font-size: 10px; line-height: 1.5; }
+    .review-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, .72fr); gap: 35px; }
+    .submission-card { padding: 23px; border: 1px solid var(--paper-line); border-radius: 10px; background: var(--paper-bright); }
+    .submission-user { display: flex; align-items: center; gap: 11px; padding-bottom: 18px; border-bottom: 1px solid var(--paper-line); }
+    .submission-user .mentor-image { width: 42px; height: 42px; color: #356456; background: var(--sage-soft); }
+    .submission-user h2 { margin: 0 0 3px; font-family: var(--display); font-size: 20px; letter-spacing: -.04em; }
+    .submission-user p { margin: 0; color: #74767d; font-size: 11px; }
+    .repo-preview { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 17px 0; border-bottom: 1px solid var(--paper-line); }
+    .repo-preview strong { display: block; margin-bottom: 4px; color: #3e4148; font-family: var(--mono); font-size: 11px; }
+    .repo-preview span { color: #74767d; font-size: 11px; }
+    .review-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 17px 0 0; }
+    .review-fact span { display: block; margin-bottom: 5px; color: #85878e; font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: .06em; }
+    .review-fact strong { color: #4e5158; font-size: 11px; }
+    .review-form { padding: 26px; border-radius: 11px; color: var(--paper); background: var(--ink-card); }
+    .review-form h2 { margin: 0 0 8px; font-family: var(--display); font-size: 24px; letter-spacing: -.045em; }
+    .review-form > p { margin: 0 0 21px; color: var(--ink-soft); font-size: 12px; line-height: 1.55; }
+    .score-wrap { display: grid; grid-template-columns: 96px 1fr; gap: 17px; align-items: center; padding: 18px 0 21px; border-top: 1px solid #343844; border-bottom: 1px solid #343844; }
+    .score-value { color: var(--amber); font-family: var(--display); font-size: 46px; font-weight: 700; letter-spacing: -.08em; line-height: .9; }
+    .score-value small { margin-left: 4px; color: var(--ink-soft); font-family: var(--mono); font-size: 11px; letter-spacing: 0; }
+    .score-control label { display: block; margin-bottom: 10px; color: var(--ink-soft); font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+    input[type=range] { width: 100%; accent-color: var(--amber); }
+    .review-form .field { margin-top: 20px; }
+    .review-form .field label { color: #b9bcc6; }
+    .review-form .field textarea { border-color: #3d414d; color: var(--paper); background: #232630; }
+    .review-form .field textarea::placeholder { color: #7e818c; }
+    .review-form .btn { width: 100%; margin-top: 3px; }
+    .review-note { margin: 11px 0 0; color: var(--ink-soft); font-size: 10px; line-height: 1.45; text-align: center; }
+    .profile-hero {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 19px;
+      padding: 32px clamp(24px, 4vw, 56px);
+      color: var(--paper);
+      background: linear-gradient(105deg, #1d2029, #14161c);
+    }
+    .profile-avatar { display: grid; width: 72px; height: 72px; place-items: center; border: 2px solid rgba(232,163,61,.75); border-radius: 50%; color: var(--ink); background: #e2a74a; font-family: var(--display); font-size: 22px; font-weight: 700; }
+    .profile-title h1 { margin: 0; font-family: var(--display); font-size: 30px; letter-spacing: -.055em; }
+    .profile-title .profile-role { margin: 4px 0 8px; color: var(--amber); font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+    .profile-title p { max-width: 560px; margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.55; }
+    .profile-links { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+    .profile-link { padding: 5px 7px; border: 1px solid #414550; border-radius: 5px; color: #c4c7cf; font-family: var(--mono); font-size: 10px; text-decoration: none; }
+    .profile-actions { display: flex; align-items: center; gap: 10px; }
+    .public-pill { padding: 6px 8px; border-radius: 999px; color: #9dc5b4; background: rgba(107,144,128,.16); font-family: var(--mono); font-size: 9px; }
+    .profile-content { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; padding: 36px clamp(24px, 4vw, 56px) 60px; }
+    .section-title-row { display: flex; align-items: center; justify-content: space-between; gap: 13px; margin-bottom: 16px; }
+    .section-title-row h2 { margin: 0; font-family: var(--display); font-size: 20px; letter-spacing: -.04em; }
+    .section-title-row a { color: #94601a; font-size: 11px; font-weight: 700; text-decoration: none; }
+    .portfolio-list { display: grid; gap: 10px; }
+    .portfolio-card { display: grid; grid-template-columns: 1fr auto; gap: 15px; padding: 16px; border: 1px solid var(--paper-line); border-radius: 9px; background: var(--paper-bright); }
+    .portfolio-card h3 { margin: 0 0 5px; font-family: var(--display); font-size: 16px; letter-spacing: -.035em; }
+    .portfolio-card p { margin: 0; color: #777980; font-size: 11px; line-height: 1.5; }
+    .portfolio-card .card-tags { margin-top: 10px; }
+    .score-chip { display: grid; align-self: center; width: 49px; height: 49px; place-items: center; border-radius: 50%; color: #3d6959; background: var(--sage-soft); font-family: var(--display); font-size: 16px; font-weight: 700; letter-spacing: -.06em; }
+    .profile-side { display: grid; align-content: start; gap: 16px; }
+    .profile-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .profile-stat { padding: 13px 10px; border: 1px solid var(--paper-line); border-radius: 8px; background: var(--paper-bright); }
+    .profile-stat b { display: block; color: #32353c; font-family: var(--display); font-size: 22px; letter-spacing: -.06em; }
+    .profile-stat span { color: #7f8188; font-family: var(--mono); font-size: 9px; }
+    .profile-activity { padding: 18px; border: 1px solid var(--paper-line); border-radius: 9px; background: var(--paper-bright); }
+    .profile-activity h3 { margin: 0 0 14px; color: #42454c; font-family: var(--display); font-size: 16px; letter-spacing: -.035em; }
+    .profile-activity .activity-grid { gap: 5px; margin-bottom: 11px; }
+    .profile-activity .activity-grid i { min-height: 11px; }
+    .profile-activity .activity-legend { color: #85878e; font-size: 9px; }
+    .feedback-quote { padding: 18px; border-left: 3px solid var(--sage); border-radius: 0 8px 8px 0; background: #e4eee9; }
+    .feedback-quote p { margin: 0 0 10px; color: #3f5e52; font-size: 12px; line-height: 1.6; }
+    .feedback-quote span { color: #628274; font-family: var(--mono); font-size: 9px; }
+    .metrics-head { padding-bottom: 29px; border-bottom: 1px solid var(--paper-line); }
+    .metrics-head p { max-width: 620px; }
+    .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 27px 0; }
+    .metric-card { padding: 19px; border: 1px solid var(--paper-line); border-radius: 10px; background: var(--paper-bright); }
+    .metric-card .metric-label { color: #7a7d83; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .07em; }
+    .metric-card strong { display: block; margin: 10px 0 5px; color: #2e3138; font-family: var(--display); font-size: 39px; line-height: 1; letter-spacing: -.07em; }
+    .metric-card span { color: #6a8b7d; font-size: 11px; }
+    .metric-main { display: grid; grid-template-columns: minmax(0, 1.23fr) minmax(260px, .77fr); gap: 15px; }
+    .chart-card, .funnel-card { padding: 21px; border: 1px solid var(--paper-line); border-radius: 10px; background: var(--paper-bright); }
+    .chart-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 24px; }
+    .chart-title h2 { margin: 0 0 5px; font-family: var(--display); font-size: 18px; letter-spacing: -.04em; }
+    .chart-title p { margin: 0; color: #85878e; font-size: 10px; }
+    .chart-key { display: flex; align-items: center; gap: 6px; color: #777a80; font-family: var(--mono); font-size: 9px; }
+    .chart-key i { width: 9px; height: 9px; border-radius: 2px; background: var(--amber); }
+    .bar-chart { display: grid; grid-template-columns: repeat(6, 1fr); align-items: end; gap: 12px; height: 173px; padding: 0 3px; border-bottom: 1px solid var(--paper-line); }
+    .bar-slot { display: grid; grid-template-rows: 1fr auto; align-items: end; height: 100%; gap: 8px; text-align: center; }
+    .bar { width: 100%; min-height: 10px; border-radius: 5px 5px 0 0; background: linear-gradient(180deg, #efb458, var(--amber)); }
+    .bar-slot span { color: #777a80; font-family: var(--mono); font-size: 9px; }
+    .funnel-card h2 { margin: 0 0 19px; font-family: var(--display); font-size: 18px; letter-spacing: -.04em; }
+    .funnel-line { margin-bottom: 17px; }
+    .funnel-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; color: #62656c; font-size: 11px; }
+    .funnel-label b { color: #363940; font-family: var(--mono); font-size: 11px; }
+    .funnel-track { height: 8px; overflow: hidden; border-radius: 99px; background: #e1ddd2; }
+    .funnel-fill { height: 100%; border-radius: inherit; background: var(--sage); }
+    .funnel-fill.amber-fill { background: var(--amber); }
+    .metric-note { margin: 20px 0 0; padding: 13px; border-radius: 7px; color: #406356; background: var(--sage-soft); font-size: 11px; line-height: 1.5; }
+    .empty-state {
+      display: none;
+      margin-top: 22px;
+      padding: 32px;
+      border: 1px dashed #c7c2b7;
+      border-radius: 10px;
+      color: #74767d;
+      text-align: center;
+      font-size: 12px;
+    }
+    .empty-state.is-shown { display: block; }
+
+    @media (max-width: 1100px) {
+      .prototype { grid-template-columns: 225px minmax(0, 1fr); }
+      .home-hero { grid-template-columns: 1fr .8fr; }
+      .challenge-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .profile-content { grid-template-columns: minmax(0, 1fr) 260px; }
+    }
+    @media (max-width: 830px) {
+      .prototype { width: 100%; margin: 0; display: block; border: 0; border-radius: 0; box-shadow: none; }
+      .rail { min-height: auto; padding: 16px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .brand { padding: 0 4px 14px; }
+      .eyebrow, .rail-note { display: none; }
+      .screen-nav { display: flex; overflow-x: auto; padding-bottom: 1px; }
+      .screen-nav button { flex: 0 0 auto; width: auto; padding: 8px 10px; font-size: 11px; white-space: nowrap; }
+      .screen { min-height: 0; }
+      .home-hero, .login-wrap, .detail-layout, .send-layout, .create-layout, .review-layout, .profile-content, .metric-main { grid-template-columns: 1fr; }
+      .home-hero { padding-top: 37px; }
+      .home-proof { display: flex; justify-content: flex-start; }
+      .proof-card { width: min(100%, 414px); margin: 0; }
+      .home-strip { grid-template-columns: 1fr 1fr; }
+      .home-strip .intro { grid-column: 1 / -1; }
+      .auth-visual { min-height: 350px; }
+      .auth-quote { padding: 35px 0; }
+      .auth-example { display: none; }
+      .auth-form-side { padding: 40px 28px; }
+      .profile-hero { grid-template-columns: auto minmax(0,1fr); }
+      .profile-actions { grid-column: 1 / -1; }
+      .profile-side { grid-template-columns: 1fr 1fr; }
+      .profile-activity { grid-row: span 2; }
+      .page-header { align-items: flex-start; flex-direction: column; }
+      .page-header .right-caption { text-align: left; }
+    }
+    @media (max-width: 560px) {
+      .topbar { min-height: 63px; padding: 13px 19px; }
+      .top-actions .plain-link { display: none; }
+      .page-pad { padding: 31px 19px 45px; }
+      .home-nav { padding: 18px 19px; }
+      .home-nav-links { gap: 8px; }
+      .home-nav-links button:not(.btn) { display: none; }
+      .home-hero { gap: 34px; padding: 36px 19px 46px; }
+      .home-copy h1 { font-size: 44px; }
+      .home-strip { grid-template-columns: 1fr; }
+      .home-strip .intro { grid-column: auto; }
+      .home-strip > div { min-height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .home-strip > div:last-child { border-bottom: 0; }
+      .challenge-toolbar { align-items: stretch; flex-direction: column; }
+      .challenge-toolbar .btn { align-self: flex-start; }
+      .challenge-grid { grid-template-columns: 1fr; }
+      .field-row, .field-row.thirds, .repo-data, .review-facts, .metric-grid { grid-template-columns: 1fr; }
+      .repo-data div { padding: 12px 0; border-right: 0; border-bottom: 1px solid var(--paper-line); }
+      .repo-data div:last-child { border-bottom: 0; }
+      .workflow { overflow-x: auto; padding-bottom: 5px; }
+      .workflow-step { min-width: 110px; }
+      .profile-hero { padding: 25px 19px; gap: 14px; }
+      .profile-avatar { width: 58px; height: 58px; font-size: 17px; }
+      .profile-title h1 { font-size: 25px; }
+      .profile-content { padding: 26px 19px 45px; }
+      .profile-side { grid-template-columns: 1fr; }
+      .profile-activity { grid-row: auto; }
+      .portfolio-card { grid-template-columns: 1fr auto; }
+      .metric-grid { gap: 9px; }
+      .metric-card { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 15px; }
+      .metric-card strong { grid-column: 2; grid-row: 1 / 3; margin: 0; }
+      .metric-card span { grid-column: 1; }
+      .bar-chart { gap: 7px; }
+      .auth-quote h1 { font-size: 43px; }
+      .auth-visual { padding: 27px 25px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="prototype" aria-label="Protótipo visual das telas do Trampolim">
+    <aside class="rail">
+      <a class="brand" href="#home" data-target="home" aria-label="Trampolim, voltar à home">
+        <span class="brand-mark">T</span> Trampolim
+      </a>
+      <div class="eyebrow">Protótipo · 9 telas</div>
+      <nav class="screen-nav" aria-label="Telas do protótipo">
+        <button type="button" class="is-active" data-target="home"><span class="nav-no">01</span>Home</button>
+        <button type="button" data-target="auth"><span class="nav-no">02</span>Login e cadastro</button>
+        <button type="button" data-target="challenges"><span class="nav-no">03</span>Lista de desafios</button>
+        <button type="button" data-target="detail"><span class="nav-no">04</span>Detalhe do desafio</button>
+        <button type="button" data-target="send"><span class="nav-no">05</span>Envio do projeto</button>
+        <button type="button" data-target="create"><span class="nav-no">06</span>Criar desafio</button>
+        <button type="button" data-target="review"><span class="nav-no">07</span>Avaliar envio</button>
+        <button type="button" data-target="profile"><span class="nav-no">08</span>Perfil público</button>
+        <button type="button" data-target="metrics"><span class="nav-no">09</span>Métricas</button>
+      </nav>
+      <div class="rail-note">
+        <strong>Desenho de fluxo</strong>
+        Aluno → desafio → entrega → avaliação → portfólio validado.
+      </div>
+    </aside>
+
+    <div class="canvas">
+      <section class="screen home-shell is-active" id="home" aria-label="Tela 1: Home">
+        <nav class="home-nav">
+          <a class="brand" href="#home" data-target="home"><span class="brand-mark">T</span> Trampolim</a>
+          <div class="home-nav-links">
+            <button type="button" data-target="challenges">Desafios</button>
+            <button type="button" data-target="profile">Portfólios</button>
+            <button type="button" data-target="auth">Entrar</button>
+            <button type="button" class="btn btn-primary btn-small" data-target="auth">Criar perfil</button>
+          </div>
+        </nav>
+        <div class="home-hero">
+          <div class="home-copy">
+            <div class="micro-label">Desafios reais · Portfólio validado</div>
+            <h1>Seu currículo diz que você sabe.<br><span>O Trampolim prova.</span></h1>
+            <p>Resolva desafios de tecnologia propostos por quem já atua na área. Cada entrega vira feedback, nota e uma prova pública do seu trabalho.</p>
+            <div class="home-ctas">
+              <button type="button" class="btn btn-primary" data-target="challenges">Explorar desafios <span class="arrow">→</span></button>
+              <button type="button" class="btn btn-outline" data-target="create">Sou mentor</button>
+            </div>
+            <div class="trustline"><span>Sem promessas vazias</span><i class="line"></i><span>Repositórios e avaliações de verdade</span></div>
+          </div>
+          <div class="home-proof">
+            <article class="proof-card" aria-label="Exemplo de atividade de uma aluna">
+              <div class="proof-top">
+                <div><div class="proof-kicker">perfil público · Ana Martins</div><div class="proof-title">Trabalho comprovado</div></div>
+                <div class="mini-avatar">AM</div>
+              </div>
+              <div class="activity-grid" aria-label="34 desafios concluídos">
+                <i></i><i></i><i class="s1"></i><i></i><i class="s2"></i><i></i><i></i><i class="s3"></i><i></i><i></i><i class="s1"></i><i></i>
+                <i class="s2"></i><i></i><i></i><i class="s1"></i><i></i><i class="s3"></i><i></i><i></i><i class="s2"></i><i></i><i></i>
+                <i></i><i class="s1"></i><i></i><i class="s2"></i><i></i><i></i><i class="s1"></i><i class="s3"></i><i></i><i></i><i class="s2"></i>
+                <i></i><i></i><i class="s1"></i><i></i><i class="s3"></i><i></i><i class="s2"></i><i></i><i></i><i class="s1"></i><i></i><i></i>
+                <i class="s2"></i><i></i><i></i><i class="s1"></i><i></i><i class="s3"></i><i></i><i></i><i class="s2"></i><i></i><i></i>
+                <i></i><i class="s1"></i><i></i><i class="s2"></i><i></i><i></i><i class="s1"></i><i class="s3"></i><i></i><i></i><i class="s2"></i>
+              </div>
+              <div class="activity-legend"><span>34 desafios concluídos</span><span class="activity-key">menos <b></b><b></b><b></b><b></b> mais</span></div>
+            </article>
+          </div>
+        </div>
+        <div class="home-strip">
+          <div class="intro">De desafio prático<br>para uma carreira visível.</div>
+          <div><span class="step-no">01</span><strong class="step-title">Escolha um desafio</strong><span class="step-copy">Filtre por tecnologia e nível.</span></div>
+          <div><span class="step-no">02</span><strong class="step-title">Envie seu projeto</strong><span class="step-copy">Validamos seu repositório no GitHub.</span></div>
+          <div><span class="step-no">03</span><strong class="step-title">Construa reputação</strong><span class="step-copy">Receba feedback que vira portfólio.</span></div>
+        </div>
+      </section>
+
+      <section class="screen" id="auth" aria-label="Tela 2: Login e cadastro">
+        <div class="login-wrap">
+          <div class="auth-visual">
+            <a class="brand" href="#home" data-target="home"><span class="brand-mark">T</span> Trampolim</a>
+            <div class="auth-quote">
+              <div class="micro-label">Seu primeiro passo</div>
+              <h1>Faça do seu <span>trabalho</span> uma prova.</h1>
+              <p>Entre na comunidade de pessoas que aprendem resolvendo problemas reais — e deixam evidências no caminho.</p>
+            </div>
+            <div class="auth-example">
+              <p>“O feedback do desafio me ajudou a explicar meu projeto com muito mais segurança nas entrevistas.”</p>
+              <span class="who">— Bruna Lopes, desenvolvedora júnior</span>
+            </div>
+          </div>
+          <div class="auth-form-side">
+            <form class="auth-form" onsubmit="return false">
+              <h2>Crie sua conta</h2>
+              <p>Escolha como você quer participar. Você poderá completar o perfil depois.</p>
+              <div class="role-switch" role="group" aria-label="Tipo de perfil">
+                <button type="button" class="is-active" data-role="Aluno"><strong>Sou aluno</strong><small>Resolver e comprovar desafios</small></button>
+                <button type="button" data-role="Mentor"><strong>Sou mentor</strong><small>Publicar e avaliar desafios</small></button>
+              </div>
+              <div class="field"><label for="auth-name">Nome</label><input id="auth-name" type="text" placeholder="Como você quer ser chamado?"></div>
+              <div class="field"><label for="auth-email">E-mail</label><input id="auth-email" type="email" placeholder="voce@email.com"></div>
+              <div class="field"><label for="auth-password">Senha</label><input id="auth-password" type="password" placeholder="Mínimo de 8 caracteres"></div>
+              <button class="btn btn-primary auth-submit" type="button" data-target="challenges">Criar conta como aluno <span class="arrow">→</span></button>
+              <p class="form-footnote">Já participa? <button type="button" class="text-button">Entrar na minha conta</button></p>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen surface-paper" id="challenges" aria-label="Tela 3: Lista de desafios">
+        <header class="topbar">
+          <div class="crumb">TRAMPOLIM / <b>DESAFIOS</b></div>
+          <div class="top-actions"><button type="button" class="plain-link" data-target="profile">Ver meu perfil</button><div class="avatar">AM</div></div>
+        </header>
+        <div class="page-pad">
+          <div class="page-header">
+            <div><h1>Desafios abertos</h1><p>Problemas reais para você construir, publicar e ter seu trabalho avaliado.</p></div>
+            <div class="right-caption">Atualizados hoje<br><strong>18 oportunidades</strong></div>
+          </div>
+          <div class="challenge-toolbar">
+            <label class="search-box"><span>⌕</span><input id="challenge-search" type="search" placeholder="Busque por título, tecnologia ou empresa"></label>
+            <button class="btn btn-dark" type="button" data-target="create">Publicar desafio <span class="arrow">+</span></button>
+          </div>
+          <div class="filter-row" aria-label="Filtros de desafios">
+            <span class="filter-label">Tecnologia</span>
+            <button type="button" class="filter is-selected">React</button><button type="button" class="filter">Java</button><button type="button" class="filter">Spring</button><button type="button" class="filter">Node.js</button><button type="button" class="filter">SQL</button>
+            <span class="filter-label" style="margin-left:10px">Nível</span>
+            <button type="button" class="filter">Iniciante</button><button type="button" class="filter is-selected">Intermediário</button><button type="button" class="filter">Avançado</button>
+          </div>
+          <div class="result-heading"><h2>Para você explorar</h2><span id="result-count">06 resultados</span></div>
+          <div class="challenge-grid" id="challenge-grid">
+            <article class="challenge-card">
+              <div class="card-top"><span class="status">Aberto</span><span class="level">INTERMEDIÁRIO</span></div>
+              <h3>Dashboard de pedidos</h3><p>Construa uma visão operacional com filtros, estados e dados que fazem sentido para uma loja.</p>
+              <div class="card-tags"><span class="tag light">React</span><span class="tag light">API REST</span><span class="tag light">UX</span></div>
+              <div class="card-meta"><span>Prazo: 10 dias</span><button type="button" class="mini-action" data-target="detail">Ver desafio →</button></div>
+            </article>
+            <article class="challenge-card">
+              <div class="card-top"><span class="status">Aberto</span><span class="level">INICIANTE</span></div>
+              <h3>API de pedidos</h3><p>Modele uma API clara para cadastro, atualização e acompanhamento de pedidos.</p>
+              <div class="card-tags"><span class="tag light">Java</span><span class="tag light">Spring Boot</span><span class="tag light">MySQL</span></div>
+              <div class="card-meta"><span>Prazo: 7 dias</span><button type="button" class="mini-action" data-target="detail">Ver desafio →</button></div>
+            </article>
+            <article class="challenge-card">
+              <div class="card-top"><span class="status amber-status">Últimas vagas</span><span class="level">AVANÇADO</span></div>
+              <h3>Busca inteligente</h3><p>Crie uma experiência de busca com filtros combináveis e uma interface objetiva.</p>
+              <div class="card-tags"><span class="tag light">React</span><span class="tag light">Node.js</span><span class="tag light">SQL</span></div>
+              <div class="card-meta"><span>Prazo: 14 dias</span><button type="button" class="mini-action" data-target="detail">Ver desafio →</button></div>
+            </article>
+            <article class="challenge-card">
+              <div class="card-top"><span class="status">Aberto</span><span class="level">INTERMEDIÁRIO</span></div>
+              <h3>Agenda de consultas</h3><p>Planeje um fluxo simples para marcar, cancelar e visualizar horários disponíveis.</p>
+              <div class="card-tags"><span class="tag light">Java</span><span class="tag light">Spring</span></div>
+              <div class="card-meta"><span>Prazo: 8 dias</span><button type="button" class="mini-action" data-target="detail">Ver desafio →</button></div>
+            </article>
+            <article class="challenge-card">
+              <div class="card-top"><span class="status">Aberto</span><span class="level">INICIANTE</span></div>
+              <h3>Catálogo de filmes</h3><p>Uma aplicação com consumo de API, favoritos e uma interface que prioriza conteúdo.</p>
+              <div class="card-tags"><span class="tag light">React</span><span class="tag light">API externa</span></div>
+              <div class="card-meta"><span>Prazo: 5 dias</span><button type="button" class="mini-action" data-target="detail">Ver desafio →</button></div>
+            </article>
+            <article class="challenge-card">
+              <div class="card-top"><span class="status">Aberto</span><span class="level">INTERMEDIÁRIO</span></div>
+              <h3>Relatório financeiro</h3><p>Transforme dados mensais em um relatório legível e pronto para apoiar decisões.</p>
+              <div class="card-tags"><span class="tag light">SQL</span><span class="tag light">Java</span></div>
+              <div class="card-meta"><span>Prazo: 12 dias</span><button type="button" class="mini-action" data-target="detail">Ver desafio →</button></div>
+            </article>
+          </div>
+          <div class="empty-state" id="empty-state">Nenhum desafio com esses filtros. Tente remover uma tecnologia ou nível.</div>
+        </div>
+      </section>
+
+      <section class="screen surface-paper" id="detail" aria-label="Tela 4: Detalhe do desafio">
+        <header class="topbar">
+          <div class="crumb">DESAFIOS / <b>API DE PEDIDOS</b></div>
+          <div class="top-actions"><button type="button" class="plain-link" data-target="challenges">Todos os desafios</button><div class="avatar">AM</div></div>
+        </header>
+        <div class="page-pad">
+          <div class="detail-layout">
+            <article class="detail-main">
+              <button type="button" class="back-link" data-target="challenges">← Voltar para desafios</button>
+              <div class="detail-heading">
+                <div class="card-tags"><span class="status">Aberto</span><span class="tag amber">INTERMEDIÁRIO</span></div>
+                <h1>Construa uma API de pedidos que uma loja realmente usaria.</h1>
+                <p class="detail-summary">Crie uma API REST clara, organizada e documentada para registrar clientes, produtos e pedidos — pensando na experiência de quem vai consumir o serviço.</p>
+              </div>
+              <section class="detail-section">
+                <h2>O contexto</h2>
+                <p>Uma pequena loja precisa sair da planilha e passar a registrar pedidos em um sistema confiável. Seu desafio é modelar os recursos principais, criar os endpoints e documentar as decisões que tomou.</p>
+              </section>
+              <section class="detail-section">
+                <h2>O que esperamos da entrega</h2>
+                <ul class="deliverable-list">
+                  <li><span class="check">✓</span>Endpoints para criar, listar e atualizar pedidos</li>
+                  <li><span class="check">✓</span>Validação de dados e respostas de erro consistentes</li>
+                  <li><span class="check">✓</span>Persistência com MySQL ou PostgreSQL</li>
+                  <li><span class="check">✓</span>README com instruções para rodar o projeto</li>
+                </ul>
+              </section>
+              <section class="detail-section">
+                <h2>Tecnologias sugeridas</h2>
+                <div class="card-tags"><span class="tag light">Java</span><span class="tag light">Spring Boot</span><span class="tag light">MySQL</span><span class="tag light">JUnit</span></div>
+              </section>
+            </article>
+            <aside class="detail-side">
+              <h3>Antes de começar</h3>
+              <div class="detail-stats">
+                <div class="detail-stat"><span>Nível</span><strong>INTERMEDIÁRIO</strong></div>
+                <div class="detail-stat"><span>Prazo</span><strong>7 DIAS</strong></div>
+                <div class="detail-stat"><span>Inscritos</span><strong>12 PESSOAS</strong></div>
+                <div class="detail-stat"><span>Publicação</span><strong>HOJE</strong></div>
+              </div>
+              <div class="micro-label" style="color:#85878e">Mentor responsável</div>
+              <div class="mentor-chip"><span class="mentor-image">RF</span><div><strong>Rafael Freitas</strong><small>Backend · 8 anos de mercado</small></div></div>
+              <button type="button" class="btn btn-primary" data-target="send">Inscrever-me <span class="arrow">→</span></button>
+              <p class="side-note">Você poderá enviar o link do repositório depois de se inscrever.</p>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen surface-paper" id="send" aria-label="Tela 5: Envio do projeto">
+        <header class="topbar">
+          <div class="crumb">MINHAS ENTREGAS / <b>API DE PEDIDOS</b></div>
+          <div class="top-actions"><span class="status amber-status">Aguardando envio</span><div class="avatar">AM</div></div>
+        </header>
+        <div class="page-pad">
+          <div class="page-header">
+            <div><h1>Envie seu projeto</h1><p>Quando você enviar, vamos validar o repositório e avisar o mentor que sua entrega está pronta para avaliação.</p></div>
+          </div>
+          <div class="workflow" aria-label="Etapas da entrega">
+            <div class="workflow-step done">Inscrição feita</div><div class="workflow-step active">Envie o projeto</div><div class="workflow-step">Avaliação do mentor</div><div class="workflow-step">Portfólio validado</div>
+          </div>
+          <div class="send-layout">
+            <form class="send-card" onsubmit="return false">
+              <h2>Link do repositório</h2>
+              <p>Use um repositório público no GitHub. A validação confirma o projeto, a linguagem principal e seu último commit.</p>
+              <div class="field">
+                <label for="repo-url">URL do GitHub</label>
+                <div class="repo-input"><span>⌘</span><input id="repo-url" type="url" value="github.com/ana-martins/api-pedidos" aria-describedby="repo-valid"></div>
+                <div class="valid-message" id="repo-valid"><i>✓</i> Repositório encontrado e pronto para envio.</div>
+              </div>
+              <div class="repo-data" aria-label="Dados do repositório validados">
+                <div><span>Linguagem principal</span><strong>Java</strong></div>
+                <div><span>Último commit</span><strong>Hoje, 14:32</strong></div>
+                <div><span>Visibilidade</span><strong>Público</strong></div>
+              </div>
+              <button type="button" class="btn btn-primary" data-target="review">Enviar para avaliação <span class="arrow">→</span></button>
+            </form>
+            <aside class="send-help">
+              <div class="micro-label">Antes de enviar</div>
+              <h3>Uma entrega que se explica</h3>
+              <p>O mentor vai olhar o projeto por dentro. Deixe os principais caminhos fáceis de encontrar.</p>
+              <div class="tip-list">
+                <div class="tip"><span class="tip-dot"></span><span>README com contexto e como rodar.</span></div>
+                <div class="tip"><span class="tip-dot"></span><span>Commits organizados e mensagem clara.</span></div>
+                <div class="tip"><span class="tip-dot"></span><span>Variáveis sensíveis fora do repositório.</span></div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen surface-paper" id="create" aria-label="Tela 6: Criar desafio">
+        <header class="topbar">
+          <div class="crumb">ÁREA DO MENTOR / <b>NOVO DESAFIO</b></div>
+          <div class="top-actions"><button type="button" class="plain-link" data-target="challenges">Meus desafios</button><div class="avatar">RF</div></div>
+        </header>
+        <div class="page-pad">
+          <div class="page-header">
+            <div><h1>Publique um desafio</h1><p>Um bom desafio parte de um contexto real e deixa claro o que a pessoa precisa entregar.</p></div>
+            <span class="tag amber">RASCUNHO</span>
+          </div>
+          <div class="create-layout">
+            <form class="form-card" onsubmit="return false">
+              <div class="field"><label for="title">Título do desafio</label><input id="title" value="API de pedidos para uma pequena loja"></div>
+              <div class="field"><label for="description">Contexto e objetivo</label><textarea id="description">A loja precisa sair da planilha e passar a registrar clientes, produtos e pedidos. Crie uma API REST clara, organizada e documentada para apoiar esse fluxo.</textarea></div>
+              <div class="field"><label for="tech">Tecnologias</label><div class="chips-input"><span class="tag amber">Java ×</span><span class="tag amber">Spring Boot ×</span><span class="tag amber">MySQL ×</span><input id="tech" placeholder="Adicionar"></div></div>
+              <div class="field-row thirds">
+                <div class="field"><label for="level">Nível</label><select id="level"><option>Intermediário</option><option>Iniciante</option><option>Avançado</option></select></div>
+                <div class="field"><label for="deadline">Prazo</label><select id="deadline"><option>7 dias</option><option>10 dias</option><option>14 dias</option></select></div>
+                <div class="field"><label for="slots">Vagas</label><input id="slots" value="20"></div>
+              </div>
+              <div class="field"><label for="company">Em nome de uma empresa <span style="text-transform:none;letter-spacing:0;font-family:var(--body);font-weight:400">(opcional)</span></label><input id="company" placeholder="Ex.: Loja Horizonte"></div>
+              <button type="button" class="btn btn-dark" data-target="challenges">Publicar desafio <span class="arrow">→</span></button>
+            </form>
+            <aside class="create-aside">
+              <div class="publish-guide">
+                <h3>Antes de publicar</h3>
+                <div class="guide-item"><span class="guide-number">1</span><span>Explique qual problema existe antes de listar tecnologias.</span></div>
+                <div class="guide-item"><span class="guide-number">2</span><span>Defina entregáveis que possam ser verificados no repositório.</span></div>
+                <div class="guide-item"><span class="guide-number">3</span><span>Escolha um prazo proporcional ao nível.</span></div>
+              </div>
+              <p class="draft-note">Este rascunho fica visível apenas para você até a publicação.</p>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen surface-paper" id="review" aria-label="Tela 7: Avaliar envio">
+        <header class="topbar">
+          <div class="crumb">ÁREA DO MENTOR / <b>AVALIAR ENTREGA</b></div>
+          <div class="top-actions"><span class="status amber-status">Entrega nova</span><div class="avatar">RF</div></div>
+        </header>
+        <div class="page-pad">
+          <div class="page-header"><div><h1>Avalie a entrega</h1><p>Sua avaliação vai para a pessoa e também vira uma evidência no perfil público dela.</p></div></div>
+          <div class="review-layout">
+            <article class="submission-card">
+              <div class="submission-user">
+                <span class="mentor-image">AM</span><div><h2>Ana Martins</h2><p>Inscrita em “API de pedidos” há 6 dias</p></div>
+              </div>
+              <div class="repo-preview">
+                <div><strong>github.com/ana-martins/api-pedidos</strong><span>Repositório público validado pelo GitHub</span></div>
+                <a class="profile-link" href="#review">Abrir repo ↗</a>
+              </div>
+              <div class="review-facts">
+                <div class="review-fact"><span>Linguagem</span><strong>Java</strong></div>
+                <div class="review-fact"><span>Último commit</span><strong>Hoje, 14:32</strong></div>
+                <div class="review-fact"><span>Tempo de entrega</span><strong>6 dias</strong></div>
+              </div>
+            </article>
+            <form class="review-form" onsubmit="return false">
+              <h2>Seu feedback</h2>
+              <p>Seja específico sobre o que funcionou e qual seria o próximo passo de evolução.</p>
+              <div class="score-wrap">
+                <div class="score-value" id="score-value">8.5<small>/10</small></div>
+                <div class="score-control"><label for="score-input">Nota atribuída</label><input id="score-input" type="range" min="0" max="10" step="0.5" value="8.5"></div>
+              </div>
+              <div class="field"><label for="feedback">Feedback para Ana</label><textarea id="feedback">A estrutura da API está clara e as respostas de erro estão bem pensadas. Para evoluir, eu incluiria testes de integração nos fluxos de criação e atualização de pedidos.</textarea></div>
+              <button type="button" class="btn btn-primary" data-target="profile">Publicar avaliação e avisar Ana <span class="arrow">→</span></button>
+              <p class="review-note">Ana receberá um e-mail. A nota e o feedback resumido aparecem no perfil público.</p>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen surface-paper" id="profile" aria-label="Tela 8: Perfil público do aluno">
+        <header class="topbar">
+          <div class="crumb">TRAMPOLIM / <b>PERFIL PÚBLICO</b></div>
+          <div class="top-actions"><span class="public-pill">VISÍVEL SEM LOGIN</span><button class="plain-link" type="button" data-target="challenges">Explorar desafios</button></div>
+        </header>
+        <div class="profile-hero">
+          <div class="profile-avatar">AM</div>
+          <div class="profile-title">
+            <h1>Ana Martins</h1><div class="profile-role">Desenvolvedora Full Stack em formação</div>
+            <p>Transformo requisitos confusos em produtos simples de usar. Estou construindo experiência com React, Java e APIs.</p>
+            <div class="profile-links"><a class="profile-link" href="#profile">github.com/ana-martins ↗</a><a class="profile-link" href="#profile">linkedin.com/in/ana-martins ↗</a></div>
+          </div>
+          <div class="profile-actions"><button type="button" class="btn btn-outline btn-small">Compartilhar perfil ↗</button></div>
+        </div>
+        <div class="profile-content">
+          <section>
+            <div class="section-title-row"><h2>Trabalho validado</h2><a href="#profile">Ver todos os desafios</a></div>
+            <div class="portfolio-list">
+              <article class="portfolio-card"><div><h3>API de pedidos</h3><p>Projeto avaliado por Rafael Freitas · Estrutura da API clara e boas respostas de erro.</p><div class="card-tags"><span class="tag light">Java</span><span class="tag light">Spring Boot</span><span class="tag sage">Avaliado</span></div></div><span class="score-chip">8.5</span></article>
+              <article class="portfolio-card"><div><h3>Dashboard de pedidos</h3><p>Projeto avaliado por Marina Salles · Interface bem organizada e fluxo de filtros consistente.</p><div class="card-tags"><span class="tag light">React</span><span class="tag light">API REST</span><span class="tag sage">Avaliado</span></div></div><span class="score-chip">9.0</span></article>
+              <article class="portfolio-card"><div><h3>Catálogo de filmes</h3><p>Projeto avaliado por Caio Mendes · Boa integração com API e atenção aos estados vazios.</p><div class="card-tags"><span class="tag light">React</span><span class="tag light">API externa</span><span class="tag sage">Avaliado</span></div></div><span class="score-chip">8.0</span></article>
+            </div>
+          </section>
+          <aside class="profile-side">
+            <div class="profile-stat-grid"><div class="profile-stat"><b>03</b><span>DESAFIOS</span></div><div class="profile-stat"><b>8.5</b><span>MÉDIA</span></div><div class="profile-stat"><b>07</b><span>TECNOLOGIAS</span></div></div>
+            <div class="profile-activity"><h3>Ritmo de entregas</h3><div class="activity-grid"><i></i><i class="s1"></i><i></i><i class="s2"></i><i></i><i class="s3"></i><i></i><i class="s1"></i><i></i><i></i><i class="s2"></i><i></i><i class="s1"></i><i></i><i class="s2"></i><i></i><i class="s3"></i><i></i><i class="s1"></i><i></i><i class="s2"></i><i></i><i></i><i class="s1"></i><i></i><i class="s2"></i><i></i><i class="s3"></i><i></i><i class="s1"></i><i></i><i class="s2"></i><i></i><i></i><i class="s1"></i><i></i></div><div class="activity-legend"><span>Últimos 6 meses</span><span>entregas concluídas</span></div></div>
+            <div class="feedback-quote"><p>“A estrutura da API está clara e demonstra atenção à experiência de quem vai consumir o serviço.”</p><span>RAFAEL FREITAS · MENTOR</span></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen surface-paper" id="metrics" aria-label="Tela 9: Painel de métricas">
+        <header class="topbar">
+          <div class="crumb">TRAMPOLIM / <b>MÉTRICAS</b></div>
+          <div class="top-actions"><span class="tag amber">VISÃO PÚBLICA</span><button type="button" class="plain-link" data-target="challenges">Ver desafios</button></div>
+        </header>
+        <div class="page-pad">
+          <div class="metrics-head page-header"><div><h1>Movimento da comunidade</h1><p>Os números que mostram quantas pessoas estão construindo, recebendo avaliação e transformando prática em portfólio.</p></div><div class="right-caption">Período<br><strong>Últimos 6 meses</strong></div></div>
+          <div class="metric-grid">
+            <article class="metric-card"><div class="metric-label">Desafios publicados</div><strong>128</strong><span>+18% no período</span></article>
+            <article class="metric-card"><div class="metric-label">Inscrições realizadas</div><strong>846</strong><span>+24% no período</span></article>
+            <article class="metric-card"><div class="metric-label">Taxa de conclusão</div><strong>62%</strong><span>+6 p.p. no período</span></article>
+          </div>
+          <div class="metric-main">
+            <article class="chart-card">
+              <div class="chart-title"><div><h2>Inscrições por mês</h2><p>Participações em desafios publicados.</p></div><div class="chart-key"><i></i> INSCRIÇÕES</div></div>
+              <div class="bar-chart" aria-label="Gráfico de inscrições por mês">
+                <div class="bar-slot"><div class="bar" style="height:36%"></div><span>MAR</span></div>
+                <div class="bar-slot"><div class="bar" style="height:49%"></div><span>ABR</span></div>
+                <div class="bar-slot"><div class="bar" style="height:44%"></div><span>MAI</span></div>
+                <div class="bar-slot"><div class="bar" style="height:68%"></div><span>JUN</span></div>
+                <div class="bar-slot"><div class="bar" style="height:81%"></div><span>JUL</span></div>
+                <div class="bar-slot"><div class="bar" style="height:100%"></div><span>AGO</span></div>
+              </div>
+            </article>
+            <article class="funnel-card">
+              <h2>Da inscrição à prova</h2>
+              <div class="funnel-line"><div class="funnel-label"><span>Inscrições</span><b>846</b></div><div class="funnel-track"><div class="funnel-fill amber-fill" style="width:100%"></div></div></div>
+              <div class="funnel-line"><div class="funnel-label"><span>Projetos enviados</span><b>611</b></div><div class="funnel-track"><div class="funnel-fill amber-fill" style="width:72%"></div></div></div>
+              <div class="funnel-line"><div class="funnel-label"><span>Avaliações concluídas</span><b>524</b></div><div class="funnel-track"><div class="funnel-fill" style="width:62%"></div></div></div>
+              <p class="metric-note">A comunidade melhorou 6 pontos percentuais na taxa de conclusão desde março.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var screenButtons = Array.prototype.slice.call(document.querySelectorAll("[data-target]"));
+      var screens = Array.prototype.slice.call(document.querySelectorAll(".screen"));
+      var navButtons = Array.prototype.slice.call(document.querySelectorAll(".screen-nav button"));
+
+      function showScreen(target) {
+        var next = document.getElementById(target);
+        if (!next) return;
+        screens.forEach(function (screen) { screen.classList.toggle("is-active", screen.id === target); });
+        navButtons.forEach(function (button) { button.classList.toggle("is-active", button.getAttribute("data-target") === target); });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        if (history.replaceState) history.replaceState(null, "", "#" + target);
+      }
+
+      screenButtons.forEach(function (button) {
+        button.addEventListener("click", function (event) {
+          var target = button.getAttribute("data-target");
+          if (!target) return;
+          event.preventDefault();
+          showScreen(target);
+        });
+      });
+
+      var roles = Array.prototype.slice.call(document.querySelectorAll("[data-role]"));
+      roles.forEach(function (button) {
+        button.addEventListener("click", function () {
+          roles.forEach(function (item) { item.classList.remove("is-active"); });
+          button.classList.add("is-active");
+          var submit = document.querySelector(".auth-submit");
+          submit.innerHTML = "Criar conta como " + button.getAttribute("data-role").toLowerCase() + ' <span class="arrow">→</span>';
+        });
+      });
+
+      var filters = Array.prototype.slice.call(document.querySelectorAll(".filter"));
+      filters.forEach(function (filter) {
+        filter.addEventListener("click", function () { filter.classList.toggle("is-selected"); });
+      });
+
+      var scoreInput = document.getElementById("score-input");
+      var scoreValue = document.getElementById("score-value");
+      if (scoreInput && scoreValue) {
+        scoreInput.addEventListener("input", function () {
+          scoreValue.innerHTML = Number(scoreInput.value).toFixed(1) + "<small>/10</small>";
+        });
+      }
+
+      var query = document.getElementById("challenge-search");
+      var grid = document.getElementById("challenge-grid");
+      var empty = document.getElementById("empty-state");
+      var count = document.getElementById("result-count");
+      if (query && grid && empty && count) {
+        query.addEventListener("input", function () {
+          var words = query.value.toLowerCase().trim();
+          var cards = Array.prototype.slice.call(grid.querySelectorAll(".challenge-card"));
+          var visible = 0;
+          cards.forEach(function (card) {
+            var matched = card.textContent.toLowerCase().indexOf(words) > -1;
+            card.style.display = matched ? "" : "none";
+            if (matched) visible += 1;
+          });
+          empty.classList.toggle("is-shown", visible === 0);
+          count.textContent = String(visible).padStart(2, "0") + (visible === 1 ? " resultado" : " resultados");
+        });
+      }
+
+      var hash = window.location.hash.replace("#", "");
+      if (hash && document.getElementById(hash)) showScreen(hash);
+    }());
+  </script>
+</body>
+</html>
