@@ -1,0 +1,30 @@
+{
+  "name": "trampolim",
+  "version": "1.0.0",
+  "description": "Plataforma que conecta aluno e mentor através de desafios práticos reais. O aluno resolve, o mentor avalia, e isso constrói um portfólio público validado — visível pra qualquer empresa, sem precisar de login.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LucianoMeneguzzo/trampolim.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LucianoMeneguzzo/trampolim/issues"
+  },
+  "homepage": "https://github.com/LucianoMeneguzzo/trampolim#readme",
+  "dependencies": {
+    "axios": "^1.19.0",
+    "express": "^5.2.1"
+  }
+}
