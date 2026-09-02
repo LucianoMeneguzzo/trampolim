@@ -1,6 +1,11 @@
 // Responsável: Andrius
 // Referência visual: telas.html, linhas ~910-951 (section id="send")
+
+import { useNavigate } from 'react-router-dom';
+
 export default function Envio() {
+  const navigate = useNavigate();
+
   return (
     <div className="surface-paper">
       <header className="topbar">
@@ -65,6 +70,7 @@ export default function Envio() {
                 <span>⌘</span>
 
                 <input
+                
                   id="repo-url"
                   type="url"
                   defaultValue="github.com/ana-martins/api-pedidos"
@@ -98,11 +104,12 @@ export default function Envio() {
             </div>
 
             <button
-              type="button"
-              className="btn btn-primary"
-            >
-              Enviar para avaliação <span className="arrow">→</span>
-            </button>
+  type="button"
+  className="btn btn-primary"
+  onClick={() => navigate('/avaliar/1')}
+>
+  Enviar para avaliação <span className="arrow">→</span>
+</button>
           </form>
 
           <aside className="send-help">
