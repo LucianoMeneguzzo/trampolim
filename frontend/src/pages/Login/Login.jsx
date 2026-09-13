@@ -1,5 +1,6 @@
+// IMPORTAÇÕES
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -81,5 +82,5 @@ export default function Login() {
         </form>
       </div>
     </div>
-  );
+  )
 }

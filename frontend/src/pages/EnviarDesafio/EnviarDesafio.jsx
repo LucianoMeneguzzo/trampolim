@@ -1,9 +1,9 @@
 // Responsável: Andrius
-// Referência visual: telas.html, linhas ~910-951 (section id="send")
 
-import { useNavigate } from 'react-router-dom';
+// IMPORTAÇÕES
+import { useNavigate } from 'react-router';
 
-export default function Envio() {
+export default function EnviarDesafio() {
   const navigate = useNavigate();
 
   return (
@@ -150,5 +150,5 @@ export default function Envio() {
         </div>
       </div>
     </div>
-  );
+  )
 }

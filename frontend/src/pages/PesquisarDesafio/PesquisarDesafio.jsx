@@ -1,3 +1,4 @@
+// IMPORTAÇÕES
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,7 +16,7 @@ const DESAFIOS_EXEMPLO = [
 // Nota de estilo: essa tela usa classes (.search-box, .challenge-grid, .challenge-card,
 // .tag, .empty-state) que ainda não estão no theme.css compartilhado — copia o CSS
 // delas do telas.html original pra um arquivo Desafios.css, ou direto aqui num <style>.
-export default function Desafios() {
+export default function PesquisarDesafio() {
   const navigate = useNavigate();
   const [busca, setBusca] = useState('');
 

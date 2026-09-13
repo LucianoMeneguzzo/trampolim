@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router';
 
 const PAGINAS = [
   { to: '/', num: '01', label: 'Home', end: true },
