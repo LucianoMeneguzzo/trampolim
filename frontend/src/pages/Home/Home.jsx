@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 // Reinterpretação do "commit graph" do GitHub, contando desafios concluídos
 // em vez de commits diários. Gerado por padrão determinístico (mesmo espírito
