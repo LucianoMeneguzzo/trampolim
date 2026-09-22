@@ -1,0 +1,216 @@
+/* tela de error */
+.desafios-loading {
+  padding: 60px;
+  text-align: center;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.desafios-erro {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+/* Toolbar de Busca */
+.challenge-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+/* Busca */
+.search-box {
+  position: relative;
+  flex: 1;
+}
+
+.search-box span {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  color: #81838a;
+  transform: translateY(-50%);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.search-box input {
+  width: 100%;
+  height: 43px;
+  padding: 0 14px 0 37px;
+  border: 1px solid #e5e0d8;
+  border-radius: 7px;
+  color: #1a1d21;
+  background: #ffffff;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .15s ease;
+}
+
+.search-box input:focus {
+  border-color: #d29a42;
+}
+
+.search-box input::placeholder {
+  color: #9ca3af;
+}
+
+/* filtros */
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 27px;
+}
+
+.filter-row .filter-label {
+  margin-right: 2px;
+  color: #75777c;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.filter {
+  padding: 7px 10px;
+  border: 1px solid #e5e0d8;
+  border-radius: 999px;
+  color: #60636a;
+  background: #ffffff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+
+.filter:hover {
+  border-color: #b1aaa0;
+}
+
+.filter.is-selected {
+  border-color: #d29a42;
+  color: #7f4f12;
+  background: #fdf3e0;
+}
+
+/* Parte de Resultados */
+.result-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 15px;
+}
+
+.result-heading h2 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 20px;
+  letter-spacing: -.035em;
+  color: #1a1d21;
+}
+
+.result-heading span {
+  color: #7b7d83;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+}
+
+/* Grade de Desafios */
+.challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 0 clamp(24px, 4vw, 56px) 40px;
+}
+
+/* Parte dos Cards de Desafios */
+.challenge-card {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+  padding: 19px;
+  cursor: pointer;
+  border: 1px solid #e5e0d8;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 5px 12px rgba(22, 25, 29, .025);
+  transition: transform .16s ease, border-color .16s ease;
+}
+
+.challenge-card:hover {
+  border-color: #b8b2a6;
+  transform: translateY(-2px);
+}
+
+.challenge-card h3 {
+  margin: 12px 0 9px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  line-height: 1.15;
+  letter-spacing: -.04em;
+  color: #1a1d21;
+}
+
+/* Tags dos Desafios */
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .02em;
+  border: 1px solid #e5e0d8;
+  background: #f7f4ef;
+  color: #60636a;
+}
+
+.tag.amber {
+  border-color: #e8c887;
+  background: #fdf3e0;
+  color: #7f4f12;
+}
+
+/* Meta - Nivel - Empresas  */
+.card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 17px;
+  color: #777a80;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+}
+
+/* Estado vazio*/
+.empty-state {
+  padding: 40px clamp(24px, 4vw, 56px);
+  color: #64748b;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+/* Alinhamento da Lateral */
+.search-box,
+.filter-row,
+.result-heading {
+  margin-left: clamp(24px, 4vw, 56px);
+  margin-right: clamp(24px, 4vw, 56px);
+}
