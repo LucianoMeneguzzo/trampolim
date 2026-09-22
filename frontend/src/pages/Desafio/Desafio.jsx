@@ -5,12 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import './Desafio.css';
 
 const DESAFIOS_MOCK = [
-  { id: 1, titulo: 'API de pedidos para uma loja', tecnologias: 'Java, Spring Boot, MySQL', nivel: 'Intermediário', empresa_nome: 'Tech Corp' },
-  { id: 2, titulo: 'Landing page com formulário de contato', tecnologias: 'React, CSS', nivel: 'Iniciante', empresa_nome: 'Design Co' },
-  { id: 3, titulo: 'Dashboard de métricas em tempo real', tecnologias: 'React, WebSocket', nivel: 'Avançado', empresa_nome: 'DataFlow' },
-  { id: 4, titulo: 'CRUD de tarefas com autenticação', tecnologias: 'Spring Boot, JWT', nivel: 'Intermediário', empresa_nome: 'TaskHub' },
-  { id: 5, titulo: 'Consumo de API pública com cache', tecnologias: 'Java, Redis', nivel: 'Avançado', empresa_nome: 'CacheOn' },
-  { id: 6, titulo: 'Formulário multi-etapas responsivo', tecnologias: 'React, CSS Grid', nivel: 'Iniciante', empresa_nome: 'FormIt' },
+  { id: 1, mentor_id: 10, empresa_nome: 'Tech Corp', titulo: 'API de pedidos para uma loja', nivel: 'Intermediário', status: 'aberto', tecnologias: ['Java', 'Spring Boot', 'MySQL'] },
+  { id: 2, mentor_id: 11, empresa_nome: 'Design Co', titulo: 'Landing page com formulário de contato', nivel: 'Iniciante', status: 'aberto', tecnologias: ['React', 'CSS'] },
+  { id: 3, mentor_id: 12, empresa_nome: 'DataFlow', titulo: 'Dashboard de métricas em tempo real', nivel: 'Avançado', status: 'aberto', tecnologias: ['React', 'WebSocket'] },
+  { id: 4, mentor_id: 10, empresa_nome: 'TaskHub', titulo: 'CRUD de tarefas com autenticação', nivel: 'Intermediário', status: 'aberto', tecnologias: ['Spring Boot', 'JWT'] },
+  { id: 5, mentor_id: 13, empresa_nome: 'CacheOn', titulo: 'Consumo de API pública com cache', nivel: 'Avançado', status: 'aberto', tecnologias: ['Java', 'Redis'] },
+  { id: 6, mentor_id: 11, empresa_nome: 'FormIt', titulo: 'Formulário multi-etapas responsivo', nivel: 'Iniciante', status: 'aberto', tecnologias: ['React', 'CSS Grid'] },
 ];
 
 const FILTROS_NIVEL = ['Todos', 'Iniciante', 'Intermediário', 'Avançado'];
@@ -33,7 +33,7 @@ export default function Desafio() {
   }, []);
 
   const visiveis = desafios.filter((d) => {
-    const matchBusca = `${d.titulo} ${d.tecnologias} ${d.nivel} ${d.empresa_nome || ''}`
+    const matchBusca = `${d.titulo} ${d.tecnologias.join(' ')} ${d.nivel} ${d.empresa_nome || ''}`
       .toLowerCase()
       .includes(busca.toLowerCase().trim());
 
@@ -117,8 +117,8 @@ export default function Desafio() {
             <h3>{d.titulo}</h3>
 
             <div className="card-tags">
-              {d.tecnologias.split(',').map((tech, i) => (
-                <span key={i} className="tag amber">{tech.trim()}</span>
+              {d.tecnologias.map((tech, i) => (
+                <span key={i} className="tag amber">{tech}</span>
               ))}
             </div>
 
