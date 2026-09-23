@@ -117,10 +117,10 @@ export default function Desafio() {
             <h3>{d.titulo}</h3>
 
             <div className="card-tags">
-              {d.tecnologias.map((tech, i) => (
-                <span key={i} className="tag amber">{tech}</span>
-              ))}
-            </div>
+  {d.tecnologias.map((tech, i) => (
+    <span key={i} className="tag amber">{tech}</span>
+  ))}
+</div>
 
             <div className="card-meta">
               <span>📊 {d.nivel}</span>
