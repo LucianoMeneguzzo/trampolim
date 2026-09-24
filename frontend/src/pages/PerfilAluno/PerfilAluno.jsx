@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router';
 import './PerfilAluno.css'; 
 
-export default function PerfilPublico() {
+export default function PerfilAluno() {
   const navigate = useNavigate();
 
   const trabalhosValidados = [
