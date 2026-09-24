@@ -1,6 +1,6 @@
 // IMPORTAÇÕES
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 // Dados de exemplo — trocar pela resposta real de GET /api/desafios assim que
 // a API estiver de pé. Estrutura pensada pra bater com o schema do plano técnico.
