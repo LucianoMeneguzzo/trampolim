@@ -21,8 +21,6 @@ const LABEL_NIVEL = {
   avancado: 'Avançado',
 };
 
-
-
 export default function Desafio() {
   const navigate = useNavigate();
 
@@ -41,18 +39,18 @@ export default function Desafio() {
   }, []);
 
   const visiveis = desafios.filter((d) => {
-  const tecs = Array.isArray(d.tecnologias)
-    ? d.tecnologias
-    : (d.tecnologias || '').split(',').map((t) => t.trim());
+    const tecs = Array.isArray(d.tecnologias)
+      ? d.tecnologias
+      : (d.tecnologias || '').split(',').map((t) => t.trim());
 
-  const matchBusca = `${d.titulo} ${tecs.join(' ')} ${d.nivel} ${d.empresa_nome || ''}`
-    .toLowerCase()
-    .includes(busca.toLowerCase().trim());
+    const matchBusca = `${d.titulo} ${tecs.join(' ')} ${d.nivel} ${d.empresa_nome || ''}`
+      .toLowerCase()
+      .includes(busca.toLowerCase().trim());
 
-  const matchNivel = nivelAtivo === 'Todos' || d.nivel === nivelAtivo;
+    const matchNivel = nivelAtivo === 'Todos' || d.nivel === nivelAtivo;
 
-  return matchBusca && matchNivel;
-});
+    return matchBusca && matchNivel;
+  });
 
   if (loading) {
     return (
@@ -71,6 +69,13 @@ export default function Desafio() {
     <div className="surface-paper">
       <header className="topbar">
         <div className="crumb">
+          <button
+            className="back-btn"
+            onClick={() => navigate('/')}
+            title="Voltar para a Home"
+          >
+            ←
+          </button>
           TRAMPOLIM / <b>DESAFIOS</b>
         </div>
         <div className="top-actions">
@@ -126,21 +131,34 @@ export default function Desafio() {
             className="challenge-card"
             onClick={() => navigate(`/student/challenge/${d.id}`)}
           >
+            <div className={`card-stripe nivel-${d.nivel}`} />
+
+            {d.empresa_nome && (
+              <div className="card-empresa">
+                <span className="empresa-logo">
+                  {d.empresa_nome.charAt(0).toUpperCase()}
+                </span>
+                <span className="empresa-nome">{d.empresa_nome}</span>
+              </div>
+            )}
+
             <h3>{d.titulo}</h3>
 
             <div className="card-tags">
-  {(Array.isArray(d.tecnologias)
-    ? d.tecnologias
-    : (d.tecnologias || '').split(',').map((t) => t.trim())
-  ).map((tech, i) => (
-    <span key={i} className="tag amber">{tech}</span>
-  ))}
-</div>
+              {(Array.isArray(d.tecnologias)
+                ? d.tecnologias
+                : (d.tecnologias || '').split(',').map((t) => t.trim())
+              ).map((tech, i) => (
+                <span key={i} className="tag amber">{tech}</span>
+              ))}
+            </div>
 
             <div className="card-meta">
               <span>📊 {LABEL_NIVEL[d.nivel] || d.nivel}</span>
               {d.empresa_nome && <span>🏢 {d.empresa_nome}</span>}
             </div>
+
+            <button className="card-cta">Ver desafio →</button>
           </article>
         ))}
       </div>

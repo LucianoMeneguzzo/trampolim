@@ -15,6 +15,29 @@
   margin-bottom: 16px;
 }
 
+/* Botão de voltar à Home */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 10px;
+  border: 1px solid #e5e0d8;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #60636a;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+
+.back-btn:hover {
+  border-color: #d29a42;
+  background: #fdf3e0;
+  color: #7f4f12;
+}
+
 /* Toolbar de Busca */
 .challenge-toolbar {
   display: flex;
@@ -131,10 +154,11 @@
   padding: 0 clamp(24px, 4vw, 56px) 40px;
 }
 
-/* Parte dos Cards de Desafios */
+/* Card de Desafio */
 .challenge-card {
+  position: relative;
   display: flex;
-  min-height: 220px;
+  min-height: 240px;
   flex-direction: column;
   padding: 19px;
   cursor: pointer;
@@ -142,12 +166,66 @@
   border-radius: 10px;
   background: #ffffff;
   box-shadow: 0 5px 12px rgba(22, 25, 29, .025);
-  transition: transform .16s ease, border-color .16s ease;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+  overflow: hidden;
 }
 
 .challenge-card:hover {
   border-color: #b8b2a6;
   transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(22, 25, 29, .06);
+}
+
+/* Faixa colorida por nível (topo do card) */
+.card-stripe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+}
+
+.card-stripe.nivel-iniciante {
+  background: #86c88d;
+}
+
+.card-stripe.nivel-intermediario {
+  background: #e8c887;
+}
+
+.card-stripe.nivel-avancado {
+  background: #e8a4a4;
+}
+
+/* Empresa / "curso" */
+.card-empresa {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.empresa-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: #fdf3e0;
+  border: 1px solid #e8c887;
+  color: #7f4f12;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.empresa-nome {
+  color: #75777c;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
 }
 
 .challenge-card h3 {
@@ -185,7 +263,7 @@
   color: #7f4f12;
 }
 
-/* Meta - Nivel - Empresas  */
+/* Meta - Nivel - Empresas */
 .card-meta {
   display: flex;
   align-items: center;
@@ -198,7 +276,29 @@
   font-size: 10px;
 }
 
-/* Estado vazio*/
+/* Botão "Ver desafio" */
+.card-cta {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 1px solid #e5e0d8;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #60636a;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+
+.challenge-card:hover .card-cta {
+  border-color: #d29a42;
+  background: #fdf3e0;
+  color: #7f4f12;
+}
+
+/* Estado vazio */
 .empty-state {
   padding: 40px clamp(24px, 4vw, 56px);
   color: #64748b;
