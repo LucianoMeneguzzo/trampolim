@@ -1,19 +1,27 @@
 // Responsável: Luiz
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import './Desafio.css';
 
 const DESAFIOS_MOCK = [
-  { id: 1, mentor_id: 10, empresa_nome: 'Tech Corp', titulo: 'API de pedidos para uma loja', nivel: 'Intermediário', status: 'aberto', tecnologias: ['Java', 'Spring Boot', 'MySQL'] },
-  { id: 2, mentor_id: 11, empresa_nome: 'Design Co', titulo: 'Landing page com formulário de contato', nivel: 'Iniciante', status: 'aberto', tecnologias: ['React', 'CSS'] },
-  { id: 3, mentor_id: 12, empresa_nome: 'DataFlow', titulo: 'Dashboard de métricas em tempo real', nivel: 'Avançado', status: 'aberto', tecnologias: ['React', 'WebSocket'] },
-  { id: 4, mentor_id: 10, empresa_nome: 'TaskHub', titulo: 'CRUD de tarefas com autenticação', nivel: 'Intermediário', status: 'aberto', tecnologias: ['Spring Boot', 'JWT'] },
-  { id: 5, mentor_id: 13, empresa_nome: 'CacheOn', titulo: 'Consumo de API pública com cache', nivel: 'Avançado', status: 'aberto', tecnologias: ['Java', 'Redis'] },
-  { id: 6, mentor_id: 11, empresa_nome: 'FormIt', titulo: 'Formulário multi-etapas responsivo', nivel: 'Iniciante', status: 'aberto', tecnologias: ['React', 'CSS Grid'] },
+  { id: 1, mentor_id: 10, empresa_nome: 'Tech Corp', titulo: 'API de pedidos para uma loja', nivel: 'intermediario', status: 'aberto', tecnologias: ['Java', 'Spring Boot', 'MySQL'] },
+  { id: 2, mentor_id: 11, empresa_nome: 'Design Co', titulo: 'Landing page com formulário de contato', nivel: 'iniciante', status: 'aberto', tecnologias: ['React', 'CSS'] },
+  { id: 3, mentor_id: 12, empresa_nome: 'DataFlow', titulo: 'Dashboard de métricas em tempo real', nivel: 'avancado', status: 'aberto', tecnologias: ['React', 'WebSocket'] },
+  { id: 4, mentor_id: 10, empresa_nome: 'TaskHub', titulo: 'CRUD de tarefas com autenticação', nivel: 'intermediario', status: 'aberto', tecnologias: ['Spring Boot', 'JWT'] },
+  { id: 5, mentor_id: 13, empresa_nome: 'CacheOn', titulo: 'Consumo de API pública com cache', nivel: 'avancado', status: 'aberto', tecnologias: ['Java', 'Redis'] },
+  { id: 6, mentor_id: 11, empresa_nome: 'FormIt', titulo: 'Formulário multi-etapas responsivo', nivel: 'iniciante', status: 'aberto', tecnologias: ['React', 'CSS Grid'] },
 ];
 
-const FILTROS_NIVEL = ['Todos', 'Iniciante', 'Intermediário', 'Avançado'];
+const FILTROS_NIVEL = ['Todos', 'iniciante', 'intermediario', 'avancado'];
+
+const LABEL_NIVEL = {
+  iniciante: 'Iniciante',
+  intermediario: 'Intermediário',
+  avancado: 'Avançado',
+};
+
+
 
 export default function Desafio() {
   const navigate = useNavigate();
@@ -33,14 +41,18 @@ export default function Desafio() {
   }, []);
 
   const visiveis = desafios.filter((d) => {
-    const matchBusca = `${d.titulo} ${d.tecnologias.join(' ')} ${d.nivel} ${d.empresa_nome || ''}`
-      .toLowerCase()
-      .includes(busca.toLowerCase().trim());
+  const tecs = Array.isArray(d.tecnologias)
+    ? d.tecnologias
+    : (d.tecnologias || '').split(',').map((t) => t.trim());
 
-    const matchNivel = nivelAtivo === 'Todos' || d.nivel === nivelAtivo;
+  const matchBusca = `${d.titulo} ${tecs.join(' ')} ${d.nivel} ${d.empresa_nome || ''}`
+    .toLowerCase()
+    .includes(busca.toLowerCase().trim());
 
-    return matchBusca && matchNivel;
-  });
+  const matchNivel = nivelAtivo === 'Todos' || d.nivel === nivelAtivo;
+
+  return matchBusca && matchNivel;
+});
 
   if (loading) {
     return (
@@ -94,7 +106,7 @@ export default function Desafio() {
             className={`filter ${nivelAtivo === nivel ? 'is-selected' : ''}`}
             onClick={() => setNivelAtivo(nivel)}
           >
-            {nivel}
+            {nivel === 'Todos' ? 'Todos' : LABEL_NIVEL[nivel]}
           </button>
         ))}
       </div>
@@ -112,18 +124,21 @@ export default function Desafio() {
           <article
             key={d.id}
             className="challenge-card"
-            onClick={() => navigate(`/desafios/${d.id}`)}
+            onClick={() => navigate(`/student/challenge/${d.id}`)}
           >
             <h3>{d.titulo}</h3>
 
             <div className="card-tags">
-  {d.tecnologias.map((tech, i) => (
+  {(Array.isArray(d.tecnologias)
+    ? d.tecnologias
+    : (d.tecnologias || '').split(',').map((t) => t.trim())
+  ).map((tech, i) => (
     <span key={i} className="tag amber">{tech}</span>
   ))}
 </div>
 
             <div className="card-meta">
-              <span>📊 {d.nivel}</span>
+              <span>📊 {LABEL_NIVEL[d.nivel] || d.nivel}</span>
               {d.empresa_nome && <span>🏢 {d.empresa_nome}</span>}
             </div>
           </article>
