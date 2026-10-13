@@ -2,7 +2,11 @@ package com.trampolim.api.service;
 
 import com.trampolim.api.dto.ChallengeDTO;
 import com.trampolim.api.entity.Challenge;
+import com.trampolim.api.entity.User;
 import com.trampolim.api.repository.ChallengeRepository;
+import com.trampolim.api.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,30 +16,32 @@ import java.util.List;
 public class ChallengeService {
 
     private final ChallengeRepository challengeRepository;
+    private final UserRepository userRepository;
 
-    // Injeção de dependência via construtor
-    public ChallengeService(ChallengeRepository challengeRepository) {
+    public ChallengeService(ChallengeRepository challengeRepository, UserRepository userRepository) {
         this.challengeRepository = challengeRepository;
+        this.userRepository = userRepository;
     }
 
-    // Método para criar um novo desafio
     public Challenge createChallenge(ChallengeDTO dto) {
-        Challenge challenge = new Challenge();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
 
-        // Mapeia os dados do DTO para a Entidade
+        User creator = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário autenticado não encontrado no banco de dados"));
+
+        Challenge challenge = new Challenge();
         challenge.setTitle(dto.getTitle());
         challenge.setDescription(dto.getDescription());
         challenge.setLevel(dto.getLevel());
-
-        // Define a data de criação automaticamente
         challenge.setCreatedAt(LocalDateTime.now());
+        challenge.setCreator(creator);
 
-        // Salva no banco de dados e retorna o desafio criado (com o ID gerado)
         return challengeRepository.save(challenge);
     }
 
-    // Método para listar todos os desafios (vamos usar no próximo passo)
+    // ALTERAÇÃO AQUI: Usamos o novo método que busca junto com o criador
     public List<Challenge> getAllChallenges() {
-        return challengeRepository.findAll();
+        return challengeRepository.findAllWithCreator();
     }
 }

@@ -29,44 +29,49 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        // 1. Pega o cabeçalho Authorization da requisição
         final String authHeader = request.getHeader("Authorization");
+        System.out.println("=== DEBUG FILTRO JWT ===");
+        System.out.println("1. Cabeçalho Authorization recebido: " + authHeader);
 
-        // 2. Verifica se o cabeçalho existe e começa com "Bearer "
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("2. Sem token ou formato inválido. Seguindo sem autenticar.");
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 3. Extrai o token (remove a parte "Bearer ")
         final String jwt = authHeader.substring(7);
+        System.out.println("3. Token JWT extraído (início): " + jwt.substring(0, Math.min(30, jwt.length())) + "...");
 
-        // 4. Extrai o email (subject) do token
         final String userEmail = jwtService.extractUsername(jwt);
+        System.out.println("4. E-mail extraído do token: " + userEmail);
 
-        // 5. Se o email foi extraído e ainda não há ninguém autenticado no contexto
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+                System.out.println("5. UserDetails carregado do banco para: " + userDetails.getUsername());
 
-            // Carrega os detalhes do usuário no banco
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+                boolean isValid = jwtService.validateToken(jwt, userDetails.getUsername());
+                System.out.println("6. O token é válido para este usuário? " + isValid);
 
-            // Valida o token com os dados do usuário
-            if (jwtService.validateToken(jwt, userDetails.getUsername())) {
-
-                // Cria o objeto de autenticação
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // Define a autenticação no contexto de segurança do Spring
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (isValid) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("7. SUCESSO: Autenticação definida no SecurityContextHolder!");
+                } else {
+                    System.out.println("7. FALHA: A validação do token retornou false.");
+                }
+            } catch (Exception e) {
+                System.out.println("7. ERRO: Exceção ao carregar usuário ou validar: " + e.getMessage());
+                e.printStackTrace();
             }
         }
+        System.out.println("======================");
 
-        // Continua a cadeia de filtros
         filterChain.doFilter(request, response);
     }
 }
