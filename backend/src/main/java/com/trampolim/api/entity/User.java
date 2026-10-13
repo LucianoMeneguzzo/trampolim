@@ -1,5 +1,6 @@
 package com.trampolim.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -16,6 +17,7 @@ public class User {
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
 
+    @JsonIgnore // <--- ADICIONADO: Ignora este campo na serialização JSON
     @Column(name = "senha", nullable = false, length = 255)
     private String password;
 
