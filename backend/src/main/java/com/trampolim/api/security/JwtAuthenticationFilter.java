@@ -27,33 +27,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-        System.out.println("=== DEBUG FILTRO JWT ===");
-        System.out.println("1. Cabeçalho Authorization recebido: " + authHeader);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("2. Sem token ou formato inválido. Seguindo sem autenticar.");
             filterChain.doFilter(request, response);
             return;
         }
 
         final String jwt = authHeader.substring(7);
-        System.out.println("3. Token JWT extraído (início): " + jwt.substring(0, Math.min(30, jwt.length())) + "...");
 
-        final String userEmail = jwtService.extractUsername(jwt);
-        System.out.println("4. E-mail extraído do token: " + userEmail);
+        try {
+            final String userEmail = jwtService.extractUsername(jwt);
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            try {
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-                System.out.println("5. UserDetails carregado do banco para: " + userDetails.getUsername());
 
-                boolean isValid = jwtService.validateToken(jwt, userDetails.getUsername());
-                System.out.println("6. O token é válido para este usuário? " + isValid);
-
-                if (isValid) {
+                if (jwtService.validateToken(jwt, userDetails.getUsername())) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
@@ -61,16 +53,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    System.out.println("7. SUCESSO: Autenticação definida no SecurityContextHolder!");
-                } else {
-                    System.out.println("7. FALHA: A validação do token retornou false.");
                 }
-            } catch (Exception e) {
-                System.out.println("7. ERRO: Exceção ao carregar usuário ou validar: " + e.getMessage());
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            // AQUI ESTÁ O SEGREDO: Imprimir o erro real que está causando o 403 silencioso
+            System.err.println("=== ERRO NA VALIDAÇÃO DO JWT ===");
+            System.err.println("Token (início): " + jwt.substring(0, Math.min(30, jwt.length())) + "...");
+            System.err.println("Mensagem do Erro: " + e.getMessage());
+            e.printStackTrace();
+            System.err.println("===============================");
         }
-        System.out.println("======================");
 
         filterChain.doFilter(request, response);
     }
