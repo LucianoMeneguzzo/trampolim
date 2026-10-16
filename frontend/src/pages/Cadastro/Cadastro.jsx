@@ -1,6 +1,7 @@
 // IMPORTAÇÕES
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
+import Logo from '../../components/Logo/Logo'
 import './Cadastro.css'
 
 export default function Cadastro() {
@@ -16,9 +17,8 @@ export default function Cadastro() {
   return (
     <div className="register-wrap">
       <div className="auth-visual">
-        <span className="brand">
-          <span className="brand-mark">T</span> Trampolim
-        </span>
+        <Logo />
+
         <div className="auth-quote">
           <div className="micro-label">Seu primeiro passo</div>
           <h1>
@@ -53,14 +53,17 @@ export default function Cadastro() {
               <small>Publicar e avaliar desafios</small>
             </button>
           </div>
+          
           <div className="field">
             <label htmlFor="auth-name">Nome</label>
             <input id="auth-name" type="text" placeholder="Como você quer ser chamado?" />
           </div>
+
           <div className="field">
             <label htmlFor="auth-email">E-mail</label>
             <input id="auth-email" type="email" placeholder="voce@email.com" />
           </div>
+
           <div className="field">
             <label htmlFor="auth-password">Senha</label>
             <input id="auth-password" type="password" placeholder="Mínimo de 8 caracteres" />
@@ -71,11 +74,9 @@ export default function Cadastro() {
           </button>
           
           <p className="form-footnote">
-            Já participa?{' '}
-            <button type="button" className="text-button">
-              Entrar na minha conta
-            </button>
+            Já participa?{' '}<button type="button" className="text-button">Entrar na minha conta</button>
           </p>
+
         </form>
       </div>
     </div>
