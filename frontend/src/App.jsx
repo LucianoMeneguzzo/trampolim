@@ -25,7 +25,10 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Cadastro />} />
+      
+      // Debug
       <Route path="/desafios" element={<Navigate to="/student/challenge/1" replace />} />
+
       <Route path="/student" element={<StudentLayout />}>
         <Route path="profile" element={<PerfilAluno />} />
         <Route path="search" element={<PesquisarDesafio />} />
