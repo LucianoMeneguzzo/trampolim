@@ -1,5 +1,5 @@
 // IMPORTAÇÕES
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import Logo from '../../components/Logo/Logo'
 import './Cadastro.css'
@@ -7,11 +7,27 @@ import './Cadastro.css'
 export default function Cadastro() {
   const navigate = useNavigate();
   const [perfil, setPerfil] = useState('Aluno');
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    senha: '',
+    type: perfil,
+  })
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    // TODO(João Lucas): trocar por POST /api/auth/cadastro quando a API estiver pronta
-    navigate(perfil === 'Aluno' ? '/desafios' : '/desafios/novo');
+  function refreshForm(e) {
+    const { id, value } = e.target
+    setForm(f => ({ ...f, [id]: value }))
+  }
+
+  useEffect(() => {
+    setForm(f => ({ ...f, type: perfil}))
+    setInterval(100)
+    console.log(form)
+  }, [perfil])
+
+  function whenSubmit(e) {
+    e.preventDefault()
+    
   }
 
   return (
@@ -32,9 +48,10 @@ export default function Cadastro() {
       </div>
 
       <div className="auth-form-side">
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={whenSubmit}>
           <h2>Crie sua conta</h2>
           <p>Escolha como você quer participar. Você poderá completar o perfil depois.</p>
+
           <div className="role-switch" role="group" aria-label="Tipo de perfil">
             <button
               type="button"
@@ -44,6 +61,7 @@ export default function Cadastro() {
               <strong>Sou aluno</strong>
               <small>Resolver e comprovar desafios</small>
             </button>
+            
             <button
               type="button"
               className={perfil === 'Mentor' ? 'is-active' : undefined}
@@ -55,28 +73,27 @@ export default function Cadastro() {
           </div>
           
           <div className="field">
-            <label htmlFor="auth-name">Nome</label>
-            <input id="auth-name" type="text" placeholder="Como você quer ser chamado?" />
+            <label htmlFor="name">Nome</label>
+            <input id="name" type="text" placeholder="Qual o seu nome?" onChange={refreshForm} required/>
           </div>
 
           <div className="field">
-            <label htmlFor="auth-email">E-mail</label>
-            <input id="auth-email" type="email" placeholder="voce@email.com" />
+            <label htmlFor="email">E-mail</label>
+            <input id="email" type="email" placeholder="Exemplo@email.com" onChange={refreshForm} required/>
           </div>
 
           <div className="field">
-            <label htmlFor="auth-password">Senha</label>
-            <input id="auth-password" type="password" placeholder="Mínimo de 8 caracteres" />
+            <label htmlFor="password">Senha</label>
+            <input id="senha" type="password" placeholder="Mínimo de 8 caracteres" onChange={refreshForm} required/>
           </div>
 
           <button className="btn btn-primary auth-submit" type="submit">
-            Criar conta como {perfil.toLowerCase()} <span className="arrow">→</span>
+            Criar conta como {perfil.toLowerCase()}
           </button>
           
           <p className="form-footnote">
-            Já participa?{' '}<button type="button" className="text-button">Entrar na minha conta</button>
+            Já participa?{' '}<button type="button" className="text-button" onClick={() => navigate('/login')}>Entrar na minha conta</button>
           </p>
-
         </form>
       </div>
     </div>
