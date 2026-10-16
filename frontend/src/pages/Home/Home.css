@@ -173,13 +173,13 @@
   margin-top: 23px;
   color: #777a80;
   font-family: var(--mono, monospace);
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: .04em;
   text-transform: uppercase;
 }
 
 .trustline .line {
-  width: 32px;
+  width: 10px;
   height: 1px;
   background: #4a4c50;
 }
@@ -209,7 +209,7 @@
   margin-bottom: 6px;
   color: #7f8187;
   font-family: var(--mono, monospace);
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: .05em;
   text-transform: uppercase;
 }
@@ -262,7 +262,7 @@
   margin-top: 13px;
   color: #7f8187;
   font-family: var(--mono, monospace);
-  font-size: 8px;
+  font-size: 11px;
 }
 
 .activity-key { display: inline-flex; align-items: center; gap: 4px; }
@@ -300,14 +300,14 @@
   margin-bottom: 17px;
   color: var(--amber, #e8a33d);
   font-family: var(--mono, monospace);
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .step-title {
   display: block;
   margin-bottom: 7px;
   color: #e3ded4;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .step-copy {
@@ -315,6 +315,17 @@
   color: #777a80;
   font-size: 10px;
   line-height: 1.55;
+}
+
+footer.home {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 10px 0px;
+  background-color: #0e121a;
+  border-top: 1px solid #34363a;
 }
 
 @media (max-width: 1100px) {
