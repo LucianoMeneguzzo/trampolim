@@ -26,7 +26,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Cadastro />} />
       
-      // Debug
+      {/* DEBUG */}
       <Route path="/desafios" element={<Navigate to="/student/challenge/1" replace />} />
 
       <Route path="/student" element={<StudentLayout />}>
