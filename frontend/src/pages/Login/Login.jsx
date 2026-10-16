@@ -1,6 +1,7 @@
 // IMPORTAÇÕES
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useState } from 'react'
+import { useNavigate } from 'react-router'
+import './Login.css'
 
 export default function Login() {
   const navigate = useNavigate();
@@ -28,14 +29,8 @@ export default function Login() {
             evidências no caminho.
           </p>
         </div>
-        <div className="auth-example">
-          <p>
-            "O feedback do desafio me ajudou a explicar meu projeto com muito mais segurança nas
-            entrevistas."
-          </p>
-          <span className="who">— Bruna Lopes, desenvolvedora júnior</span>
-        </div>
       </div>
+
       <div className="auth-form-side">
         <form className="auth-form" onSubmit={handleSubmit}>
           <h2>Crie sua conta</h2>
