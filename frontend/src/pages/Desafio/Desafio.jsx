@@ -4,15 +4,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import './Desafio.css';
 
-const DESAFIOS_MOCK = [
-  { id: 1, mentor_id: 10, empresa_nome: 'Tech Corp', titulo: 'API de pedidos para uma loja', nivel: 'intermediario', status: 'aberto', tecnologias: ['Java', 'Spring Boot', 'MySQL'] },
-  { id: 2, mentor_id: 11, empresa_nome: 'Design Co', titulo: 'Landing page com formulário de contato', nivel: 'iniciante', status: 'aberto', tecnologias: ['React', 'CSS'] },
-  { id: 3, mentor_id: 12, empresa_nome: 'DataFlow', titulo: 'Dashboard de métricas em tempo real', nivel: 'avancado', status: 'aberto', tecnologias: ['React', 'WebSocket'] },
-  { id: 4, mentor_id: 10, empresa_nome: 'TaskHub', titulo: 'CRUD de tarefas com autenticação', nivel: 'intermediario', status: 'aberto', tecnologias: ['Spring Boot', 'JWT'] },
-  { id: 5, mentor_id: 13, empresa_nome: 'CacheOn', titulo: 'Consumo de API pública com cache', nivel: 'avancado', status: 'aberto', tecnologias: ['Java', 'Redis'] },
-  { id: 6, mentor_id: 11, empresa_nome: 'FormIt', titulo: 'Formulário multi-etapas responsivo', nivel: 'iniciante', status: 'aberto', tecnologias: ['React', 'CSS Grid'] },
-];
-
 const FILTROS_NIVEL = ['Todos', 'iniciante', 'intermediario', 'avancado'];
 
 const LABEL_NIVEL = {
@@ -28,22 +19,25 @@ export default function Desafio() {
   const [nivelAtivo, setNivelAtivo] = useState('Todos');
   const [desafios, setDesafios] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(null);
 
+  // Backend: http://localhost:8080/api/desafios
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDesafios(DESAFIOS_MOCK);
-      setLoading(false);
-    }, 300);
-
-    return () => clearTimeout(timer);
+    fetch('http://localhost:8080/api/desafios')
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((dados) => setDesafios(dados))
+      .catch((e) => {
+        console.error('Erro ao buscar desafios:', e);
+        setErro('Não foi possível carregar os desafios. Tente novamente mais tarde.');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const visiveis = desafios.filter((d) => {
-    const tecs = Array.isArray(d.tecnologias)
-      ? d.tecnologias
-      : (d.tecnologias || '').split(',').map((t) => t.trim());
-
-    const matchBusca = `${d.titulo} ${tecs.join(' ')} ${d.nivel} ${d.empresa_nome || ''}`
+    const matchBusca = `${d.titulo} ${d.descricao || ''} ${d.nivel} ${d.nomeCriador || ''}`
       .toLowerCase()
       .includes(busca.toLowerCase().trim());
 
@@ -61,6 +55,19 @@ export default function Desafio() {
           </div>
         </header>
         <div className="desafios-loading">Carregando desafios...</div>
+      </div>
+    );
+  }
+
+  if (erro) {
+    return (
+      <div className="surface-paper">
+        <header className="topbar">
+          <div className="crumb">
+            TRAMPOLIM / <b>DESAFIOS</b>
+          </div>
+        </header>
+        <div className="empty-state">{erro}</div>
       </div>
     );
   }
@@ -86,7 +93,7 @@ export default function Desafio() {
       <div className="page-header">
         <div>
           <h1>Encontre seu próximo desafio</h1>
-          <p>Desafios reais propostos por mentores. Filtre por tecnologia, nível ou empresa.</p>
+          <p>Desafios reais propostos por mentores. Filtre por nível ou criador.</p>
         </div>
       </div>
 
@@ -97,7 +104,7 @@ export default function Desafio() {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             type="search"
-            placeholder="Busque por título, tecnologia ou empresa"
+            placeholder="Busque por título, descrição ou criador"
           />
         </label>
       </div>
@@ -133,29 +140,24 @@ export default function Desafio() {
           >
             <div className={`card-stripe nivel-${d.nivel}`} />
 
-            {d.empresa_nome && (
+            {d.nomeCriador && (
               <div className="card-empresa">
                 <span className="empresa-logo">
-                  {d.empresa_nome.charAt(0).toUpperCase()}
+                  {d.nomeCriador.charAt(0).toUpperCase()}
                 </span>
-                <span className="empresa-nome">{d.empresa_nome}</span>
+                <span className="empresa-nome">{d.nomeCriador}</span>
               </div>
             )}
 
             <h3>{d.titulo}</h3>
 
-            <div className="card-tags">
-              {(Array.isArray(d.tecnologias)
-                ? d.tecnologias
-                : (d.tecnologias || '').split(',').map((t) => t.trim())
-              ).map((tech, i) => (
-                <span key={i} className="tag amber">{tech}</span>
-              ))}
-            </div>
+            {d.descricao && (
+              <p className="card-descricao">{d.descricao}</p>
+            )}
 
             <div className="card-meta">
               <span>📊 {LABEL_NIVEL[d.nivel] || d.nivel}</span>
-              {d.empresa_nome && <span>🏢 {d.empresa_nome}</span>}
+              {d.nomeCriador && <span>🏢 {d.nomeCriador}</span>}
             </div>
 
             <button className="card-cta">Ver desafio →</button>
@@ -165,7 +167,7 @@ export default function Desafio() {
 
       {visiveis.length === 0 && (
         <div className="empty-state">
-          Nenhum desafio com esses filtros. Tente remover uma tecnologia ou nível.
+          Nenhum desafio com esses filtros. Tente remover algum filtro.
         </div>
       )}
     </div>
