@@ -1,5 +1,3 @@
-import { Routes, Route } from 'react-router';
-import Home from './pages/Home/Home';
 import { Routes, Route, Outlet, Navigate } from 'react-router'
 
 import Home             from './pages/Home/Home'
@@ -27,7 +25,10 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Cadastro />} />
+      
+      {/* DEBUG */}
       <Route path="/desafios" element={<Navigate to="/student/challenge/1" replace />} />
+
       <Route path="/student" element={<StudentLayout />}>
         <Route path="profile" element={<PerfilAluno />} />
         <Route path="search" element={<PesquisarDesafio />} />
@@ -41,9 +42,5 @@ export default function App() {
         <Route path="assessment/:id" element={<AvaliarDesafio />} />
       </Route>
     </Routes>
- HEAD
-  );
-
   )
- 4bba0e63d045ace7cac522956cd5d967afc7d912
 }
