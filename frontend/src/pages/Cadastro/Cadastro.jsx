@@ -21,13 +21,11 @@ export default function Cadastro() {
 
   useEffect(() => {
     setForm(f => ({ ...f, type: perfil}))
-    setInterval(100)
-    console.log(form)
   }, [perfil])
 
   function whenSubmit(e) {
     e.preventDefault()
-    
+    console.log(form)
   }
 
   return (
@@ -48,7 +46,7 @@ export default function Cadastro() {
       </div>
 
       <div className="auth-form-side">
-        <form className="auth-form" onSubmit={whenSubmit}>
+        <form className="auth-form">
           <h2>Crie sua conta</h2>
           <p>Escolha como você quer participar. Você poderá completar o perfil depois.</p>
 
@@ -87,7 +85,7 @@ export default function Cadastro() {
             <input id="senha" type="password" placeholder="Mínimo de 8 caracteres" onChange={refreshForm} required/>
           </div>
 
-          <button className="btn btn-primary auth-submit" type="submit">
+          <button className="btn btn-primary auth-submit" type="submit" onSubmit={whenSubmit}>
             Criar conta como {perfil.toLowerCase()}
           </button>
           
