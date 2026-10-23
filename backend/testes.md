@@ -23,14 +23,7 @@ Copie o valor do campo "token" da resposta e substitua em TODOS os comandos abai
 
 ## PASSO 2: Criar um Novo Desafio
 
-curl -i -X POST http://localhost:8080/api/desafios \
--H "Content-Type: application/json" \
--H "Authorization: Bearer SEU_TOKEN_AQUI" \
--d '{
-"title": "Criar API REST com Spring Boot",
-"description": "Desenvolver um backend completo usando Java, Spring Boot, JPA e PostgreSQL.",
-"level": "INTERMEDIARIO"
-}'
+clea
 
 ---
 
