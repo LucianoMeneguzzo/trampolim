@@ -33,6 +33,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-right: 1px solid var(--line);
   background: rgba(18, 20, 26, .82);
 }
+
 .brand {
   display: flex;
   align-items: center;
@@ -45,6 +46,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-weight: 700;
   letter-spacing: -.045em;
 }
+
 .brand-mark {
   display: grid;
   width: 24px;
@@ -57,6 +59,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 17px;
   line-height: 1;
 }
+
 .eyebrow, .micro-label {
   font-family: var(--mono);
   font-size: 10px;
@@ -64,6 +67,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   letter-spacing: .11em;
   text-transform: uppercase;
 }
+
 .eyebrow { color: var(--ink-soft); padding: 0 10px 10px; }
 .screen-nav { display: grid; gap: 3px; }
 .screen-nav a {

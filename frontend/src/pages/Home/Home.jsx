@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router'
+import Logo from '../../components/Logo/Logo'
 import './Home.css'
 
 const activityCells = [
@@ -16,9 +17,7 @@ export default function Home() {
   return (
     <main className="home-shell">
       <nav className="home-nav" aria-label="Navegação principal">
-        <button type="button" className="brand brand-button" onClick={() => navigate('/')}>
-          <span className="brand-mark">T</span> Trampolim
-        </button>
+        <Logo />
 
         <div className="home-nav-links">
           <button type="button" onClick={() => navigate('/login')}>Entrar</button>
