@@ -23,9 +23,10 @@ export default function Cadastro() {
     setForm(f => ({ ...f, type: perfil}))
   }, [perfil])
 
+  // FUNÇÃO PARA ENVIO DO FORMULÁRIO (CRIAÇÃO DE CONTA)
   function whenSubmit(e) {
     e.preventDefault()
-    console.log(form)
+    
   }
 
   return (
@@ -46,7 +47,7 @@ export default function Cadastro() {
       </div>
 
       <div className="auth-form-side">
-        <form className="auth-form">
+        <form className="auth-form" onSubmit={(e) => whenSubmit(e)}>
           <h2>Crie sua conta</h2>
           <p>Escolha como você quer participar. Você poderá completar o perfil depois.</p>
 
@@ -85,7 +86,7 @@ export default function Cadastro() {
             <input id="senha" type="password" placeholder="Mínimo de 8 caracteres" onChange={refreshForm} required/>
           </div>
 
-          <button className="btn btn-primary auth-submit" type="submit" onSubmit={whenSubmit}>
+          <button className="btn btn-primary auth-submit" type="submit">
             Criar conta como {perfil.toLowerCase()}
           </button>
           
