@@ -1,5 +1,5 @@
 /* =========================================
-   Telas feitas  por Luiz /////// Desafios
+   Telas feitas por Luiz //// Desafios  ////
    ========================================= */
 
 .surface-paper {
@@ -293,6 +293,7 @@
   line-height: 1.6;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3; /* Correção do aviso do VS Code adicionada aqui */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -343,7 +344,7 @@
   font-size: 14px;
 }
 
-/* Alinhamento da Lateral (Mantendo a responsividade) */
+/* Alinhamento da Lateral */
 .search-box,
 .filter-row,
 .result-heading {
