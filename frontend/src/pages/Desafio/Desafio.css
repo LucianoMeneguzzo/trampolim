@@ -1,44 +1,98 @@
-/* tela de error */
-.desafios-loading {
-  padding: 60px;
-  text-align: center;
-  color: #94a3b8;
+/* =========================================
+   Telas feitas  por Luiz /////// Desafios
+   ========================================= */
+
+.surface-paper {
+  background-color: #17181a !important; 
+  color: #f4f0e7 !important;
+  min-height: 100vh;
+  width: 100%;
+  display: block;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px clamp(24px, 4vw, 56px);
+  border-bottom: 1px solid #34363a;
+  background: #17181a !important;
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.crumb {
+  display: flex;
+  align-items: center;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11px;
+  color: #9a9ca2 !important;
+  letter-spacing: 0.05em;
 }
 
-.desafios-erro {
-  background: #fee2e2;
-  color: #dc2626;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
+.crumb b {
+  color: #f4f0e7 !important;
+  margin-left: 4px;
 }
 
-/* Botão de voltar à Home */
+.page-header {
+  padding: 40px clamp(24px, 4vw, 56px) 24px;
+}
+
+.page-header h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 34px;
+  margin: 0 0 8px 0;
+  color: #f4f0e7 !important;
+  letter-spacing: -0.02em;
+}
+
+.page-header p {
+  margin: 0;
+  color: #9a9ca2 !important;
+  font-size: 15px;
+}
+
+.top-actions .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #303236 !important;
+  border: 1px solid #55575b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: bold;
+  color: #f4f0e7 !important;
+}
+
 .back-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  margin-right: 10px;
-  border: 1px solid #e5e0d8;
+  width: 30px;
+  height: 30px;
+  margin-right: 12px;
+  border: 1px solid #4a4c50;
   border-radius: 50%;
-  background: #ffffff;
-  color: #60636a;
-  font-size: 14px;
+  background: transparent !important;
+  color: #9a9ca2 !important;
+  font-size: 15px;
   cursor: pointer;
-  transition: border-color .15s ease, background .15s ease, color .15s ease;
+  transition: all .2s ease;
 }
 
 .back-btn:hover {
-  border-color: #d29a42;
-  background: #fdf3e0;
-  color: #7f4f12;
+  border-color: #e8a33d;
+  color: #e8a33d !important;
+  transform: translateX(-2px);
 }
 
-/* Toolbar de Busca */
+/* Busca */
 .challenge-toolbar {
   display: flex;
   align-items: center;
@@ -46,7 +100,6 @@
   margin-bottom: 24px;
 }
 
-/* Busca */
 .search-box {
   position: relative;
   flex: 1;
@@ -54,260 +107,243 @@
 
 .search-box span {
   position: absolute;
-  left: 13px;
+  left: 15px;
   top: 50%;
-  color: #81838a;
+  color: #9a9ca2 !important;
   transform: translateY(-50%);
-  font-size: 16px;
+  font-size: 18px;
   pointer-events: none;
 }
 
 .search-box input {
   width: 100%;
-  height: 43px;
-  padding: 0 14px 0 37px;
-  border: 1px solid #e5e0d8;
-  border-radius: 7px;
-  color: #1a1d21;
-  background: #ffffff;
-  font-size: 13px;
+  height: 48px;
+  padding: 0 16px 0 42px;
+  border: 1px solid #3b3d40;
+  border-radius: 8px;
+  color: #f4f0e7 !important;
+  background: #202124 !important; 
+  font-size: 14px;
   outline: none;
-  transition: border-color .15s ease;
+  transition: border-color .2s ease, box-shadow .2s ease;
 }
 
 .search-box input:focus {
-  border-color: #d29a42;
+  border-color: #e8a33d;
+  box-shadow: 0 0 0 2px rgba(232, 163, 61, 0.2);
 }
 
 .search-box input::placeholder {
-  color: #9ca3af;
+  color: #7f8187 !important;
 }
 
-/* filtros */
+/* Filtros */
 .filter-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 27px;
+  gap: 10px;
+  margin-bottom: 30px;
 }
 
 .filter-row .filter-label {
-  margin-right: 2px;
-  color: #75777c;
+  margin-right: 4px;
+  color: #9a9ca2 !important;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: .08em;
 }
 
 .filter {
-  padding: 7px 10px;
-  border: 1px solid #e5e0d8;
+  padding: 8px 14px;
+  border: 1px solid #3b3d40;
   border-radius: 999px;
-  color: #60636a;
-  background: #ffffff;
+  color: #9a9ca2 !important;
+  background: transparent !important;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   cursor: pointer;
-  transition: border-color .15s ease, background .15s ease, color .15s ease;
+  transition: all .2s ease;
 }
 
 .filter:hover {
-  border-color: #b1aaa0;
+  border-color: #777a80;
+  color: #f4f0e7 !important;
 }
 
 .filter.is-selected {
-  border-color: #d29a42;
-  color: #7f4f12;
-  background: #fdf3e0;
+  border-color: #e8a33d;
+  color: #201b14 !important;
+  background: #e8a33d !important; 
+  font-weight: bold;
 }
 
-/* Parte de Resultados */
 .result-heading {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  margin: 0 0 15px;
+  margin: 0 0 20px;
 }
 
 .result-heading h2 {
   margin: 0;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 20px;
+  font-size: 22px;
   letter-spacing: -.035em;
-  color: #1a1d21;
+  color: #f4f0e7 !important;
 }
 
 .result-heading span {
-  color: #7b7d83;
+  color: #9a9ca2 !important;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
+  background: #202124;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #3b3d40;
 }
 
 /* Grade de Desafios */
 .challenge-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  padding: 0 clamp(24px, 4vw, 56px) 40px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 0 clamp(24px, 4vw, 56px) 60px;
 }
 
 /* Card de Desafio */
 .challenge-card {
   position: relative;
   display: flex;
-  min-height: 240px;
+  min-height: 260px;
   flex-direction: column;
-  padding: 19px;
+  padding: 24px;
   cursor: pointer;
-  border: 1px solid #e5e0d8;
-  border-radius: 10px;
-  background: #ffffff;
-  box-shadow: 0 5px 12px rgba(22, 25, 29, .025);
-  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+  border: 1px solid #3b3d40;
+  border-radius: 12px;
+  background: #202124 !important; 
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
   overflow: hidden;
 }
 
 .challenge-card:hover {
-  border-color: #b8b2a6;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(22, 25, 29, .06);
+  border-color: #e8a33d;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,.4);
 }
 
-/* Faixa colorida por nível (topo do card) */
+/* Tarjas coloridas */
 .card-stripe {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 3px;
+  height: 4px;
 }
 
-.card-stripe.nivel-iniciante {
-  background: #86c88d;
-}
+.card-stripe.nivel-iniciante { background: #86c88d !important; }
+.card-stripe.nivel-intermediario { background: #e8a33d !important; }
+.card-stripe.nivel-avancado { background: #e8a4a4 !important; }
 
-.card-stripe.nivel-intermediario {
-  background: #e8c887;
-}
-
-.card-stripe.nivel-avancado {
-  background: #e8a4a4;
-}
-
-/* Empresa / "curso" */
+/* Empresa */
 .card-empresa {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
 .empresa-logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  background: #fdf3e0;
-  border: 1px solid #e8c887;
-  color: #7f4f12;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #303236 !important;
+  border: 1px solid #55575b;
+  color: #e8a33d !important;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
 .empresa-nome {
-  color: #75777c;
+  color: #9a9ca2 !important;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
 
 .challenge-card h3 {
-  margin: 12px 0 9px;
+  margin: 16px 0 12px;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 18px;
-  line-height: 1.15;
-  letter-spacing: -.04em;
-  color: #1a1d21;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -.03em;
+  color: #f4f0e7 !important;
 }
 
-/* Tags dos Desafios */
-.card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
+.challenge-card p.card-descricao {
+  color: #9a9ca2 !important;
+  font-size: 14px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.tag {
-  display: inline-block;
-  padding: 3px 9px;
-  border-radius: 999px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: .02em;
-  border: 1px solid #e5e0d8;
-  background: #f7f4ef;
-  color: #60636a;
-}
-
-.tag.amber {
-  border-color: #e8c887;
-  background: #fdf3e0;
-  color: #7f4f12;
-}
-
-/* Meta - Nivel - Empresas */
 .card-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   margin-top: auto;
-  padding-top: 17px;
-  color: #777a80;
+  padding-top: 20px;
+  color: #7f8187 !important;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
 }
 
-/* Botão "Ver desafio" */
 .card-cta {
-  margin-top: 12px;
-  padding: 8px 12px;
-  border: 1px solid #e5e0d8;
-  border-radius: 7px;
-  background: #ffffff;
-  color: #60636a;
+  margin-top: 16px;
+  padding: 10px 16px;
+  border: 1px solid #4a4c50;
+  border-radius: 8px;
+  background: transparent !important;
+  color: #9a9ca2 !important;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: .08em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: border-color .15s ease, background .15s ease, color .15s ease;
+  transition: all .2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
 }
 
 .challenge-card:hover .card-cta {
-  border-color: #d29a42;
-  background: #fdf3e0;
-  color: #7f4f12;
+  border-color: #e8a33d;
+  background: #e8a33d !important;
+  color: #201b14 !important; 
+  font-weight: bold;
 }
 
-/* Estado vazio */
-.empty-state {
-  padding: 40px clamp(24px, 4vw, 56px);
-  color: #64748b;
+.empty-state, .desafios-loading {
+  padding: 60px clamp(24px, 4vw, 56px);
+  color: #7f8187 !important;
   text-align: center;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 14px;
 }
 
-/* Alinhamento da Lateral */
+/* Alinhamento da Lateral (Mantendo a responsividade) */
 .search-box,
 .filter-row,
 .result-heading {

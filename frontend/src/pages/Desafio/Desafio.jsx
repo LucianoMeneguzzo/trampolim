@@ -1,6 +1,6 @@
 // Responsável: Luiz
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import './Desafio.css';
 
@@ -12,29 +12,27 @@ const LABEL_NIVEL = {
   avancado: 'Avançado',
 };
 
+// --- DADOS FALSOS EXPANDIDOS (Para simular um banco de dados real) ---
+const DESAFIOS_FALSOS = [
+  { id: 1, titulo: 'Criar uma API REST', descricao: 'Desenvolva uma API usando Node.js e Express com autenticação JWT.', nivel: 'intermediario', nomeCriador: 'Tech Solutions' },
+  { id: 2, titulo: 'Landing Page Responsiva', descricao: 'Crie uma página de vendas usando HTML, CSS e animações suaves.', nivel: 'iniciante', nomeCriador: 'Agência Web' },
+  { id: 3, titulo: 'Sistema de Autenticação', descricao: 'Implemente login com JWT, rotas protegidas e React Context.', nivel: 'avancado', nomeCriador: 'Startup X' },
+  { id: 4, titulo: 'Dashboard Analítico', descricao: 'Construa um painel de dados com gráficos interativos usando Chart.js.', nivel: 'intermediario', nomeCriador: 'DataCorp' },
+  { id: 5, titulo: 'App de Clima', descricao: 'Consuma uma API externa para exibir a previsão do tempo em tempo real.', nivel: 'iniciante', nomeCriador: 'WebMasters' },
+  { id: 6, titulo: 'E-commerce Completo', descricao: 'Desenvolva o frontend de uma loja virtual com carrinho e checkout.', nivel: 'avancado', nomeCriador: 'ShopDev' },
+  { id: 7, titulo: 'Clone do Spotify', descricao: 'Recrie a interface de um player de música com controle de áudio.', nivel: 'intermediario', nomeCriador: 'MusicTech' },
+  { id: 8, titulo: 'Calculadora Científica', descricao: 'Crie uma calculadora funcional com operações matemáticas complexas.', nivel: 'iniciante', nomeCriador: 'CodeLab' },
+  { id: 9, titulo: 'Microserviço de Pagamentos', descricao: 'Integre um gateway de pagamento usando Node.js e Webhooks.', nivel: 'avancado', nomeCriador: 'FinTech BR' }
+];
+// ---------------------------------------------------------------------
+
 export default function Desafio() {
   const navigate = useNavigate();
 
   const [busca, setBusca] = useState('');
   const [nivelAtivo, setNivelAtivo] = useState('Todos');
-  const [desafios, setDesafios] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState(null);
-
-  // Backend: http://localhost:8080/api/desafios
-  useEffect(() => {
-    fetch('http://localhost:8080/api/desafios')
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((dados) => setDesafios(dados))
-      .catch((e) => {
-        console.error('Erro ao buscar desafios:', e);
-        setErro('Não foi possível carregar os desafios. Tente novamente mais tarde.');
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  
+  const desafios = DESAFIOS_FALSOS; 
 
   const visiveis = desafios.filter((d) => {
     const matchBusca = `${d.titulo} ${d.descricao || ''} ${d.nivel} ${d.nomeCriador || ''}`
@@ -45,32 +43,6 @@ export default function Desafio() {
 
     return matchBusca && matchNivel;
   });
-
-  if (loading) {
-    return (
-      <div className="surface-paper">
-        <header className="topbar">
-          <div className="crumb">
-            TRAMPOLIM / <b>DESAFIOS</b>
-          </div>
-        </header>
-        <div className="desafios-loading">Carregando desafios...</div>
-      </div>
-    );
-  }
-
-  if (erro) {
-    return (
-      <div className="surface-paper">
-        <header className="topbar">
-          <div className="crumb">
-            TRAMPOLIM / <b>DESAFIOS</b>
-          </div>
-        </header>
-        <div className="empty-state">{erro}</div>
-      </div>
-    );
-  }
 
   return (
     <div className="surface-paper">
