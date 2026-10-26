@@ -1,5 +1,5 @@
 .register-wrap {
-    min-height: 858px;
+    min-height: 860px;
     display: grid;
     grid-template-columns: minmax(320px, .92fr) minmax(420px, 1.08fr);
 }
@@ -12,6 +12,27 @@
     background: var(--ink);
 }
     .auth-visual .brand { padding: 0; }
+
+@media (max-width: 900px) {
+    .register-wrap {
+        grid-template-rows: 80px auto;
+        grid-template-columns: 1fr;
+    }
+
+    .auth-visual {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px 0;
+    }
+        .auth-quote {
+            display: none;
+        }
+
+    div.auth-form-side {
+        padding: 0 20px;
+    }
+}
 
 .auth-quote {
     max-width: 445px;
