@@ -1,5 +1,5 @@
 .register-wrap {
-    min-height: 860px;
+    min-height: 100vh;
     display: grid;
     grid-template-columns: minmax(320px, .92fr) minmax(420px, 1.08fr);
 }
