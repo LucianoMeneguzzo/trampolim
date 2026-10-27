@@ -27,12 +27,12 @@ export default function App() {
       <Route path="/register" element={<Cadastro />} />
       
       {/* DEBUG */}
-      <Route path="/desafios" element={<Navigate to="/student/challenge/1" replace />} />
+      <Route path="/desafios" element={<Desafio />} />
 
       <Route path="/student" element={<StudentLayout />}>
         <Route path="profile" element={<PerfilAluno />} />
-        <Route path="search" element={<PesquisarDesafio />} />
-        <Route path="challenge/:id" element={<Desafio />} />
+        <Route path="search" element={<Desafio />} />
+        <Route path="challenge/:id" element={<PesquisarDesafio />} />
         <Route path="challenge/:id/send-challenge" element={<EnviarDesafio />} />
       </Route>
 
