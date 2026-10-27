@@ -21,11 +21,12 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Busca o usuário no banco pelo e-mail
-        com.trampolim.api.entity.User user = userRepository.findByEmail(email)
+        // Busca o usuário no banco pelo e-mail (sem diferenciar maiúsculas/minúsculas)
+        com.trampolim.api.entity.User user = userRepository.findByEmailIgnoreCase(email.trim())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com o e-mail: " + email));
 
-        // Retorna o UserDetails do Spring Security com as autoridades (roles) baseadas no tipo
+        // Retorna o UserDetails do Spring Security com as autoridades (roles) baseadas no tipo:
+        // STUDENT -> ROLE_STUDENT, MENTOR -> ROLE_MENTOR (é o que o hasRole(...) do SecurityConfig confere)
         return new User(
                 user.getEmail(),
                 user.getPassword(),

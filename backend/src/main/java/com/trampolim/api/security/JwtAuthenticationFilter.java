@@ -6,6 +6,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,8 +17,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+// Roda uma vez por requisição: lê "Authorization: Bearer <token>", valida o JWT
+// e, se estiver tudo certo, marca o usuário como autenticado no SecurityContext.
+// Token ausente/inválido NÃO bloqueia aqui: a requisição segue sem usuário e o
+// SecurityConfig decide (rota pública passa, rota protegida responde 401).
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
@@ -56,12 +64,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            // AQUI ESTÁ O SEGREDO: Imprimir o erro real que está causando o 403 silencioso
-            System.err.println("=== ERRO NA VALIDAÇÃO DO JWT ===");
-            System.err.println("Token (início): " + jwt.substring(0, Math.min(30, jwt.length())) + "...");
-            System.err.println("Mensagem do Erro: " + e.getMessage());
-            e.printStackTrace();
-            System.err.println("===============================");
+            // Token expirado, assinatura errada ou usuário apagado. O token em si não vai para o log.
+            log.debug("JWT rejeitado: {}", e.getMessage());
         }
 
         filterChain.doFilter(request, response);
