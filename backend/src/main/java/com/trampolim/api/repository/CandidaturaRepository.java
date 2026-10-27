@@ -21,7 +21,8 @@ public interface CandidaturaRepository extends JpaRepository<Candidatura, Long> 
     @Query("SELECT c FROM Candidatura c JOIN FETCH c.candidato JOIN FETCH c.desafio WHERE c.desafio = :desafio")
     List<Candidatura> findAllByDesafio(Challenge desafio);
 
-    // Busca uma candidatura específica pelo ID, trazendo candidato e desafio para evitar LazyInitializationException
-    @Query("SELECT c FROM Candidatura c JOIN FETCH c.candidato JOIN FETCH c.desafio WHERE c.id = :id")
+    // Busca uma candidatura específica pelo ID, trazendo candidato, desafio e o mentor dono do desafio
+    // (para conferir permissão) e evitar LazyInitializationException
+    @Query("SELECT c FROM Candidatura c JOIN FETCH c.candidato JOIN FETCH c.desafio d LEFT JOIN FETCH d.creator WHERE c.id = :id")
     Optional<Candidatura> findByIdWithDetails(Long id);
 }

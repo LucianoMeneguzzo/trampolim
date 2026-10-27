@@ -22,7 +22,7 @@ public class ChallengeController {
         this.challengeService = challengeService;
     }
 
-    // Endpoint para criar um novo desafio (POST)
+    // Endpoint para criar um novo desafio (POST) — só MENTOR
     @PostMapping
     public ResponseEntity<DesafioRespostaDTO> criarDesafio(@RequestBody @Valid ChallengeDTO dto) {
         // 1. O serviço cria e salva a entidade
@@ -34,7 +34,7 @@ public class ChallengeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
     }
 
-    // Endpoint para listar todos os desafios (GET)
+    // Endpoint para listar todos os desafios (GET) — público
     @GetMapping
     public ResponseEntity<List<DesafioRespostaDTO>> listarDesafios() {
         // 1. O serviço busca todas as entidades no banco
@@ -46,5 +46,11 @@ public class ChallengeController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(resposta);
+    }
+
+    // Detalhe de um desafio (GET) — público
+    @GetMapping("/{id}")
+    public ResponseEntity<DesafioRespostaDTO> buscarDesafio(@PathVariable Long id) {
+        return ResponseEntity.ok(new DesafioRespostaDTO(challengeService.getChallenge(id)));
     }
 }
