@@ -13,6 +13,8 @@ Esta documentação descreve as rotas disponíveis na API do projeto Trampolim: 
 
         ./mvnw test
 
+4. Para ver a tela de avaliação sem ter a tela do aluno pronta, `scripts/criar-dados-de-teste.ps1` cria uma aluna inscrita no desafio mais recente, com repositório enviado, e mostra o link. Use só com o banco em memória (H2), nunca com o Supabase.
+
 A API sobe em `http://localhost:8080` e aceita chamadas do front em `http://localhost:5173` (CORS configurável em `CORS_ALLOWED_ORIGINS`).
 
 ---
