@@ -8,7 +8,7 @@ Plataforma que conecta aluno e mentor através de desafios práticos reais. O al
 
 - **Front-end:** React
 - **Back-end:** Java + Spring Boot
-- **Banco de dados:** MySQL
+- **Banco de dados:** PostgreSQL (Supabase); H2 em memória para rodar local e nos testes
 - **Autenticação:** JWT via Spring Security
 - **APIs externas:** GitHub API (valida o repositório enviado pelo aluno), serviço de e-mail (notificações)
 
@@ -22,7 +22,25 @@ Plataforma que conecta aluno e mentor através de desafios práticos reais. O al
 
 ## Como rodar localmente
 
-> ⏳ Em construção — cada parte ganha instrução própria conforme o ambiente for configurado (backend, frontend, banco). Essa seção precisa estar completa antes da entrega final (é critério de avaliação).
+Precisa de **Java 21+**, **Node 20.19+** e **Git**. Use dois terminais (no Windows, o Git Bash):
+
+```
+# Terminal 1 — backend (http://localhost:8080)
+cd backend
+./mvnw spring-boot:run
+
+# Terminal 2 — front-end (http://localhost:5173)
+cd frontend
+npm install
+npm run dev
+```
+
+- **Sem o arquivo `backend/.env`** o backend sobe com banco em memória (H2) e já cria dados de exemplo. Os dados somem quando ele para.
+  - Mentor: `mentor@trampolim.local` / `senha-teste-123`
+  - Aluna: `aluna@trampolim.local` / `senha-teste-123`
+- **Para usar o banco do time (Supabase)**, copie `backend/.env.example` para `backend/.env` e preencha (peça os valores ao time).
+- Testes: `./mvnw test` no backend e `npm test` no front-end.
+- Rotas da API e quem pode acessar cada uma: [backend/README.md](backend/README.md).
 
 ## Funcionalidades
 
