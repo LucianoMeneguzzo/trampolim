@@ -1,0 +1,49 @@
+/* Tela "Publique um desafio" — estilos vindos de docs/prototipo.html (#create) */
+.create-layout { display: grid; grid-template-columns: minmax(0, 1fr) 245px; gap: 35px; }
+
+.form-card { padding: clamp(20px, 3vw, 32px); border: 1px solid var(--paper-line); border-radius: 12px; background: var(--paper-bright); }
+.form-card .btn { margin-top: 6px; }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field-row.thirds { grid-template-columns: 1.1fr 1fr .7fr; }
+
+.label-optional { text-transform: none; letter-spacing: 0; font-family: var(--body); font-weight: 400; }
+
+.chips-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 45px;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--paper-line);
+  border-radius: 7px;
+  background: var(--paper-bright);
+}
+.chips-input:focus-within { border-color: #b8802e; outline: 2px solid rgba(232, 163, 61, .22); }
+.field .chips-input input { min-width: 140px; flex: 1; width: auto; height: 28px; padding: 0 4px; border: 0; outline: 0; background: transparent; font-size: 12px; }
+.chip-remove { cursor: pointer; }
+.chip-remove:hover { border-color: #d29a42; }
+
+.create-aside { align-self: start; }
+.publish-guide { padding: 18px; border: 1px solid var(--paper-line); border-radius: 10px; background: #e9e5db; }
+.publish-guide h3 { margin: 0 0 14px; font-family: var(--display); font-size: 16px; letter-spacing: -.035em; }
+.guide-item { display: flex; gap: 9px; margin-top: 12px; color: #65676d; font-size: 11px; line-height: 1.45; }
+.guide-number { display: grid; flex: 0 0 18px; width: 18px; height: 18px; place-items: center; border-radius: 50%; color: #705017; background: var(--amber-soft); font-family: var(--mono); font-size: 9px; }
+.draft-note { margin: 14px 2px 0; color: #85878c; font-size: 10px; line-height: 1.5; }
+
+.publish-success .micro-label { color: #49695c; }
+.publish-success h2 { margin: 10px 0 8px; font-family: var(--display); font-size: 26px; letter-spacing: -.045em; }
+.publish-success p { margin: 0 0 16px; color: #676a70; font-size: 13px; line-height: 1.6; }
+.chips-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+.publish-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn-outline-paper { border-color: var(--paper-line); color: var(--paper-ink); background: transparent; }
+.btn-outline-paper:hover { background: #ebe7dd; }
+
+@media (max-width: 900px) {
+  .create-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .field-row, .field-row.thirds { grid-template-columns: 1fr; }
+}
