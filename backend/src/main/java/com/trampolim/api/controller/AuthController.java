@@ -3,7 +3,9 @@ package com.trampolim.api.controller;
 import com.trampolim.api.dto.AuthResponseDTO;
 import com.trampolim.api.dto.LoginDTO;
 import com.trampolim.api.dto.UserRegistrationDTO;
+import com.trampolim.api.dto.UserResponseDTO;
 import com.trampolim.api.entity.User;
+import com.trampolim.api.exception.ApiException;
 import com.trampolim.api.repository.UserRepository;
 import com.trampolim.api.service.JwtService;
 import com.trampolim.api.service.UserService;
@@ -12,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,40 +36,43 @@ public class AuthController {
         this.jwtService = jwtService;
     }
 
+    // 201 com o usuário criado | 400 campos inválidos | 409 e-mail já cadastrado
     @PostMapping("/cadastro")
-    public ResponseEntity<User> cadastrar(@RequestBody @Valid UserRegistrationDTO dto) {
+    public ResponseEntity<UserResponseDTO> cadastrar(@RequestBody @Valid UserRegistrationDTO dto) {
         User novoUsuario = userService.registerUser(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new UserResponseDTO(novoUsuario));
     }
 
+    // 200 com { userId, name, type, token } | 401 e-mail ou senha errados
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid LoginDTO dto) {
+        String email = dto.getEmail().trim();
+
         try {
-            // 1. Autentica as credenciais com o Spring Security
+            // 1. Autentica as credenciais com o Spring Security (compara a senha com o hash BCrypt)
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
+                    new UsernamePasswordAuthenticationToken(email, dto.getPassword())
             );
-
-            // 2. Busca o usuário no banco para preencher a resposta corretamente
-            User usuario = userRepository.findByEmail(dto.getEmail())
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-            // 3. Gera o token JWT
-            String token = jwtService.generateToken(usuario.getEmail());
-
-            // 4. Monta e retorna a resposta completa com os dados reais
-            AuthResponseDTO resposta = new AuthResponseDTO(
-                    usuario.getId(),
-                    usuario.getName(),
-                    usuario.getType(),
-                    token
-            );
-
-            return ResponseEntity.ok(resposta);
-
-        } catch (Exception e) {
-            // Retorna 401 (Não Autorizado) se a senha estiver errada ou usuário não existir
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (AuthenticationException e) {
+            // Mesma mensagem para e-mail inexistente e senha errada: não revela quais e-mails existem
+            throw ApiException.unauthorized("E-mail ou senha inválidos.");
         }
+
+        // 2. Busca o usuário no banco para preencher a resposta corretamente
+        User usuario = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> ApiException.unauthorized("E-mail ou senha inválidos."));
+
+        // 3. Gera o token JWT
+        String token = jwtService.generateToken(usuario);
+
+        // 4. Monta e retorna a resposta completa com os dados reais
+        AuthResponseDTO resposta = new AuthResponseDTO(
+                usuario.getId(),
+                usuario.getName(),
+                usuario.getType(),
+                token
+        );
+
+        return ResponseEntity.ok(resposta);
     }
 }

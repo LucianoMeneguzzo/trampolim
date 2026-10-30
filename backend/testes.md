@@ -43,6 +43,8 @@ Substitua `SEU_TOKEN_AQUI` pelo token gerado no Passo 1.
 
 ## PASSO 4: Candidatar-se a um Desafio
 
+> Use o token de uma conta **STUDENT**. Criar desafio (PASSO 2) e aprovar/rejeitar (PASSOS 6 e 7) pedem token de **MENTOR**.
+
 Use o ID do desafio criado no Passo 2. Se for o primeiro, provavelmente é o ID 1 ou 2.
 
     curl -i -X POST http://localhost:8080/api/candidaturas \
@@ -89,7 +91,7 @@ Substitua o `1` na URL pelo ID da candidatura que você quer aprovar.
 
 ## 🧪 TESTES DE ERRO (Tratamento Global de Exceções)
 
-### Teste A: Candidatura duplicada (deve retornar erro 400)
+### Teste A: Candidatura duplicada (deve retornar erro 409)
 
 Rode o comando do PASSO 4 duas vezes seguidas (com o mesmo `desafioId`). A segunda vez deve retornar um JSON limpo:
 
@@ -133,12 +135,17 @@ Deve retornar algo como:
 
 ## 📋 Resumo Rápido dos Endpoints
 
-    POST   /api/usuarios                         - Registrar novo usuário (sem auth)
+    POST   /api/auth/cadastro                    - Registrar novo usuário (sem auth)
     POST   /api/auth/login                       - Login e obter token (sem auth)
-    POST   /api/desafios                         - Criar desafio (com auth)
-    GET    /api/desafios                         - Listar desafios (com auth)
-    POST   /api/candidaturas                     - Candidatar-se (com auth)
-    GET    /api/candidaturas/desafio/{id}        - Listar candidaturas de um desafio (com auth)
-    PATCH  /api/candidaturas/{id}/status         - Aprovar ou rejeitar candidatura (com auth)
+    POST   /api/desafios                         - Criar desafio (token de MENTOR)
+    GET    /api/desafios                         - Listar desafios (sem auth)
+    POST   /api/candidaturas                     - Candidatar-se (token de STUDENT)
+    GET    /api/candidaturas/desafio/{id}        - Listar candidaturas de um desafio (token do MENTOR dono)
+    PATCH  /api/candidaturas/{id}/status         - Aprovar ou rejeitar candidatura (token do MENTOR dono)
+    PUT    /api/candidaturas/{id}/envio          - Enviar repositório (token do STUDENT dono)
+    POST   /api/candidaturas/{id}/avaliacao      - Avaliar entrega (token do MENTOR dono)
+
+Detalhes de cada rota e de quem pode acessar: ver backend/README.md.
+Testes automáticos de tudo isso: ./mvnw test
 
     
