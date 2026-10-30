@@ -1,0 +1,9 @@
+/* O layout (auth-visual, auth-form, field...) vem de Cadastro.css. Aqui só o que é do login. */
+.login-notice {
+    margin: 0 0 16px;
+    padding: 10px 12px;
+    border-radius: 7px;
+    color: #705017;
+    background: var(--amber-soft);
+    font-size: 12px;
+}
