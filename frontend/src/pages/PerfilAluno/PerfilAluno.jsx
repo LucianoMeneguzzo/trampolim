@@ -36,7 +36,7 @@ export default function PerfilAluno() {
     <div className="surface-paper">
       <header className="topbar">
         <div className="crumb">
-          TRAMPOLIM / <b>PERFIL PÚBLICO</b>
+          TRAMPOLIM / <b>PERFIL DO ALUNO</b>
         </div>
 
         <div className="top-actions">
