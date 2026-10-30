@@ -3,8 +3,8 @@ target/
 *.class
 *.jar
 *.war
-.mvn/
-!.mvn/wrapper/maven-wrapper.jar
+.mvn/*
+!.mvn/wrapper/
 
 # IDE
 .idea/
