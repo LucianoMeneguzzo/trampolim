@@ -108,8 +108,9 @@
 
 .profile-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 28px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+  gap: 24px;
+  align-items: start;
   padding: 36px clamp(24px, 4vw, 56px) 60px;
 }
 
@@ -144,6 +145,7 @@
 }
 .validated-card h3 {
   margin: 0 0 5px;
+  color: var(--paper-ink);
   font-family: var(--display);
   font-size: 16px;
   letter-spacing: -.035em;
@@ -195,7 +197,13 @@
   letter-spacing: -.06em;
 }
 
-.profile-sidebar { display: grid; gap: 16px; align-content: start; }
+.profile-sidebar { 
+  display: grid; 
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px; 
+  align-content: start; 
+  margin-top: 0; 
+}
 
 .metrics-grid {
   display: grid;
@@ -277,8 +285,32 @@
 }
 
 @media (max-width: 860px) {
-  .profile-layout { grid-template-columns: minmax(0, 1fr) 260px; }
+  .profile-layout { grid-template-columns: minmax(0, 1fr); }
   .profile-banner-content { flex-direction: column; }
+
   .validated-card { flex-direction: column; }
   .score-badge { align-self: flex-start; }
+
+  .profile-sidebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "metrics activity"
+      "quote activity";
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .metrics-grid {
+    grid-area: metrics;
+  }
+
+  .quote-card {
+    grid-area: quote;
+  }
+
+  .activity-card {
+    grid-area: activity;
+    align-self: stretch;
+  }
 }
