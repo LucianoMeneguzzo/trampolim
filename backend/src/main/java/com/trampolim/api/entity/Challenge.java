@@ -2,6 +2,7 @@ package com.trampolim.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,43 +13,67 @@ public class Challenge {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "titulo", nullable = false, length = 150)
-    private String title;
+    @Column(nullable = false)
+    private String titulo;
 
-    @Column(name = "descricao", columnDefinition = "TEXT", nullable = false)
-    private String description;
+    @Column(nullable = false, length = 2000)
+    private String descricao;
 
-    @Column(name = "nivel", nullable = false)
-    private String level; // Ex: "INICIANTE", "INTERMEDIARIO", "AVANCADO"
+    @Column(nullable = false)
+    private String tecnologias;
 
-    @Column(name = "data_criacao", nullable = false)
-    private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private String nivel;
 
-    // Relacionamento com o Usuário (quem criou o desafio, por exemplo)
+    @Column(nullable = false)
+    private LocalDate prazo;
+
+    @Column(nullable = false)
+    private Integer vagas;
+
+    @Column(nullable = false)
+    private String empresa;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime dataCriacao;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "criador_id")
-    @JsonIgnore // Evita loops infinitos de JSON na serialização
-    private User creator;
+    @JoinColumn(name = "criador_id", nullable = false)
+    @JsonIgnore
+    private User criador;
 
-    // Construtor vazio (exigido pelo JPA)
-    public Challenge() {}
+    public Challenge() {
+        this.dataCriacao = LocalDateTime.now();
+    }
 
     // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
 
-    public String getLevel() { return level; }
-    public void setLevel(String level) { this.level = level; }
+    public String getTecnologias() { return tecnologias; }
+    public void setTecnologias(String tecnologias) { this.tecnologias = tecnologias; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getNivel() { return nivel; }
+    public void setNivel(String nivel) { this.nivel = nivel; }
 
-    public User getCreator() { return creator; }
-    public void setCreator(User creator) { this.creator = creator; }
+    public LocalDate getPrazo() { return prazo; }
+    public void setPrazo(LocalDate prazo) { this.prazo = prazo; }
+
+    public Integer getVagas() { return vagas; }
+    public void setVagas(Integer vagas) { this.vagas = vagas; }
+
+    public String getEmpresa() { return empresa; }
+    public void setEmpresa(String empresa) { this.empresa = empresa; }
+
+    public LocalDateTime getDataCriacao() { return dataCriacao; }
+    public void setDataCriacao(LocalDateTime dataCriacao) { this.dataCriacao = dataCriacao; }
+
+    public User getCriador() { return criador; }
+    public void setCriador(User criador) { this.criador = criador; }
 }

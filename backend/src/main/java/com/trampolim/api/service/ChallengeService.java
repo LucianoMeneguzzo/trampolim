@@ -1,6 +1,6 @@
 package com.trampolim.api.service;
 
-import com.trampolim.api.dto.ChallengeDTO;
+import com.trampolim.api.dto.DesafioDTO;
 import com.trampolim.api.entity.Challenge;
 import com.trampolim.api.entity.User;
 import com.trampolim.api.repository.ChallengeRepository;
@@ -23,25 +23,32 @@ public class ChallengeService {
         this.userRepository = userRepository;
     }
 
-    public Challenge createChallenge(ChallengeDTO dto) {
+    public Challenge criarDesafio(DesafioDTO dto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-
-        User creator = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário autenticado não encontrado no banco de dados"));
+        User criador = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário autenticado não encontrado."));
 
         Challenge challenge = new Challenge();
-        challenge.setTitle(dto.getTitle());
-        challenge.setDescription(dto.getDescription());
-        challenge.setLevel(dto.getLevel());
-        challenge.setCreatedAt(LocalDateTime.now());
-        challenge.setCreator(creator);
+        challenge.setTitulo(dto.getTitulo());
+        challenge.setDescricao(dto.getDescricao());
+        challenge.setTecnologias(dto.getTecnologias());
+        challenge.setNivel(dto.getNivel());
+        challenge.setPrazo(dto.getPrazo());
+        challenge.setVagas(dto.getVagas());
+        challenge.setEmpresa(dto.getEmpresa());
+        challenge.setDataCriacao(LocalDateTime.now());
+        challenge.setCriador(criador);
 
         return challengeRepository.save(challenge);
     }
 
-    // ALTERAÇÃO AQUI: Usamos o novo método que busca junto com o criador
-    public List<Challenge> getAllChallenges() {
-        return challengeRepository.findAllWithCreator();
+    public List<Challenge> listarTodosDesafios() {
+        return challengeRepository.findAll();
+    }
+
+    public Challenge buscarDesafioPorId(Long id) {
+        return challengeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Desafio não encontrado."));
     }
 }

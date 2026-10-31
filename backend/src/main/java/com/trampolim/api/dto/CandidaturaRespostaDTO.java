@@ -11,17 +11,18 @@ public class CandidaturaRespostaDTO {
     private String nomeCandidato;
     private String emailCandidato;
     private String tituloDesafio;
+    private String linkEnvio;
+    private LocalDateTime dataEnvio;
 
-    // Construtor vazio
     public CandidaturaRespostaDTO() {}
 
-    // Construtor inteligente: recebe a entidade Candidatura e mapeia apenas o que queremos mostrar
     public CandidaturaRespostaDTO(Candidatura candidatura) {
         this.id = candidatura.getId();
         this.status = candidatura.getStatus();
         this.dataCandidatura = candidatura.getDataCandidatura();
+        this.linkEnvio = candidatura.getLinkEnvio();
+        this.dataEnvio = candidatura.getDataEnvio();
 
-        // Verifica se existe um candidato vinculado
         if (candidatura.getCandidato() != null) {
             this.nomeCandidato = candidatura.getCandidato().getName();
             this.emailCandidato = candidatura.getCandidato().getEmail();
@@ -30,9 +31,8 @@ public class CandidaturaRespostaDTO {
             this.emailCandidato = "Desconhecido";
         }
 
-        // Verifica se existe um desafio vinculado
         if (candidatura.getDesafio() != null) {
-            this.tituloDesafio = candidatura.getDesafio().getTitle();
+            this.tituloDesafio = candidatura.getDesafio().getTitulo();
         } else {
             this.tituloDesafio = "Desafio Desconhecido";
         }
@@ -45,4 +45,6 @@ public class CandidaturaRespostaDTO {
     public String getNomeCandidato() { return nomeCandidato; }
     public String getEmailCandidato() { return emailCandidato; }
     public String getTituloDesafio() { return tituloDesafio; }
+    public String getLinkEnvio() { return linkEnvio; }
+    public LocalDateTime getDataEnvio() { return dataEnvio; }
 }

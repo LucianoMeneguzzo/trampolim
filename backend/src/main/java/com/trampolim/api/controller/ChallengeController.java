@@ -1,6 +1,6 @@
 package com.trampolim.api.controller;
 
-import com.trampolim.api.dto.ChallengeDTO;
+import com.trampolim.api.dto.DesafioDTO;
 import com.trampolim.api.dto.DesafioRespostaDTO;
 import com.trampolim.api.entity.Challenge;
 import com.trampolim.api.service.ChallengeService;
@@ -22,29 +22,24 @@ public class ChallengeController {
         this.challengeService = challengeService;
     }
 
-    // Endpoint para criar um novo desafio (POST)
     @PostMapping
-    public ResponseEntity<DesafioRespostaDTO> criarDesafio(@RequestBody @Valid ChallengeDTO dto) {
-        // 1. O serviço cria e salva a entidade
-        Challenge novoDesafio = challengeService.createChallenge(dto);
-
-        // 2. Convertemos a entidade para o DTO de resposta antes de enviar ao cliente
-        DesafioRespostaDTO resposta = new DesafioRespostaDTO(novoDesafio);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
+    public ResponseEntity<DesafioRespostaDTO> criarDesafio(@RequestBody @Valid DesafioDTO dto) {
+        Challenge novoDesafio = challengeService.criarDesafio(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new DesafioRespostaDTO(novoDesafio));
     }
 
-    // Endpoint para listar todos os desafios (GET)
     @GetMapping
-    public ResponseEntity<List<DesafioRespostaDTO>> listarDesafios() {
-        // 1. O serviço busca todas as entidades no banco
-        List<Challenge> desafios = challengeService.getAllChallenges();
-
-        // 2. Convertemos a lista de entidades para uma lista de DTOs de resposta
+    public ResponseEntity<List<DesafioRespostaDTO>> listarTodosDesafios() {
+        List<Challenge> desafios = challengeService.listarTodosDesafios();
         List<DesafioRespostaDTO> resposta = desafios.stream()
                 .map(DesafioRespostaDTO::new)
                 .collect(Collectors.toList());
-
         return ResponseEntity.ok(resposta);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DesafioRespostaDTO> buscarDesafioPorId(@PathVariable Long id) {
+        Challenge desafio = challengeService.buscarDesafioPorId(id);
+        return ResponseEntity.ok(new DesafioRespostaDTO(desafio));
     }
 }

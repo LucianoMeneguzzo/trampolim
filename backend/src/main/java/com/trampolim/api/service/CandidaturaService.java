@@ -1,6 +1,7 @@
 package com.trampolim.api.service;
 
 import com.trampolim.api.dto.CandidaturaDTO;
+import com.trampolim.api.dto.EnvioDTO;
 import com.trampolim.api.entity.Candidatura;
 import com.trampolim.api.entity.Challenge;
 import com.trampolim.api.entity.User;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional // <--- ADICIONADO: Garante que todos os métodos rodem em uma única transação
+@Transactional
 public class CandidaturaService {
 
     private final CandidaturaRepository candidaturaRepository;
@@ -70,5 +71,33 @@ public class CandidaturaService {
 
         candidatura.setStatus(novoStatus);
         return candidaturaRepository.save(candidatura);
+    }
+
+    // NOVO: Método para o aluno enviar o link do projeto
+    public Candidatura enviarProjeto(Long candidaturaId, EnvioDTO dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User usuarioLogado = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário autenticado não encontrado."));
+
+        Candidatura candidatura = candidaturaRepository.findByIdWithDetails(candidaturaId)
+                .orElseThrow(() -> new RuntimeException("Candidatura não encontrada."));
+
+        // Verifica se o usuário logado é o dono da candidatura
+        if (!candidatura.getCandidato().getEmail().equals(usuarioLogado.getEmail())) {
+            throw new RuntimeException("Você só pode enviar o projeto das suas próprias candidaturas.");
+        }
+
+        candidatura.setLinkEnvio(dto.getLinkEnvio());
+        candidatura.setDataEnvio(LocalDateTime.now());
+        candidatura.setStatus("ENVIADO");
+
+        return candidaturaRepository.save(candidatura);
+    }
+
+    // NOVO: Método para buscar uma candidatura específica (usado na rota GET /{id})
+    public Candidatura buscarCandidaturaPorId(Long candidaturaId) {
+        return candidaturaRepository.findByIdWithDetails(candidaturaId)
+                .orElseThrow(() -> new RuntimeException("Candidatura não encontrada."));
     }
 }
