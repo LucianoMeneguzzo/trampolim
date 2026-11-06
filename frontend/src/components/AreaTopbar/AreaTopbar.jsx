@@ -21,6 +21,7 @@ export default function AreaTopbar({ area = 'ÁREA DO MENTOR', pagina, children 
       </div>
       <div className="area-actions">
         {children}
+        <button type="button" className="area-link" onClick={() => navigate('/business/profile')}>Meu perfil</button>
         <button type="button" className="area-link" onClick={handleSair}>Sair</button>
         <div className="area-avatar" title={usuario?.name}>{iniciais(usuario?.name)}</div>
       </div>

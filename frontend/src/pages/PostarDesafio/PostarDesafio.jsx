@@ -1,10 +1,12 @@
 // Tela 6 do protótipo: "Publique um desafio" (rota /business/post-challenge, só mentor)
+// Também edita um desafio já publicado (rota /business/challenge/:id/edit)
 
 // IMPORTAÇÕES
-import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router'
 import AreaTopbar from '../../components/AreaTopbar/AreaTopbar'
-import { criarDesafio, NIVEIS } from '../../services/desafios'
+import { atualizarDesafio, buscarDesafio, criarDesafio, NIVEIS } from '../../services/desafios'
+import { formatarDia, listaDeTecnologias } from '../../utils/desafios'
 import './PostarDesafio.css'
 
 const PRAZOS = [7, 10, 14]
@@ -15,12 +17,10 @@ const FORM_INICIAL = {
   descricao: '',
   nivel: 'INTERMEDIARIO',
   prazoDias: 7,
+  prazo: '',
   vagas: 20,
   empresa: '',
 }
-
-// Os erros de validação do back vêm com o nome do campo da API; só o prazo tem outro nome no formulário
-const CAMPO_DA_API = { prazo: 'prazoDias' }
 
 // O formulário escolhe "7 dias"; a API recebe a data final (AAAA-MM-DD, no fuso de quem publica)
 function dataDaquiA(dias) {
@@ -33,6 +33,8 @@ function dataDaquiA(dias) {
 
 export default function PostarDesafio() {
   const navigate = useNavigate()
+  const { id } = useParams()
+  const editando = Boolean(id)
   const [form, setForm] = useState(FORM_INICIAL)
   const [tecnologias, setTecnologias] = useState([])
   const [novaTecnologia, setNovaTecnologia] = useState('')
@@ -40,6 +42,36 @@ export default function PostarDesafio() {
   const [erro, setErro] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [publicado, setPublicado] = useState(null)
+  const [carregando, setCarregando] = useState(editando)
+
+  // Editando: preenche o formulário com o desafio atual
+  useEffect(() => {
+    if (!id) return undefined
+    let ativo = true
+
+    buscarDesafio(id)
+      .then(desafio => {
+        if (!ativo) return
+        setForm({
+          titulo: desafio.titulo,
+          descricao: desafio.descricao,
+          nivel: desafio.nivel,
+          prazoDias: 7,
+          prazo: desafio.prazo,
+          vagas: desafio.vagas,
+          empresa: desafio.empresa,
+        })
+        setTecnologias(listaDeTecnologias(desafio.tecnologias))
+        setCarregando(false)
+      })
+      .catch(err => {
+        if (!ativo) return
+        setErro(err.status === 404 ? 'Não encontramos este desafio.' : 'Não foi possível carregar o desafio.')
+        setCarregando(false)
+      })
+
+    return () => { ativo = false }
+  }, [id])
 
   function refreshForm(e) {
     const { id, value } = e.target
@@ -77,29 +109,27 @@ export default function PostarDesafio() {
     setEnviando(true)
 
     try {
-      const desafio = await criarDesafio({
+      const dados = {
         titulo: form.titulo.trim(),
         descricao: form.descricao.trim(),
         tecnologias: tecnologias.join(', '),
         nivel: form.nivel,
-        prazo: dataDaquiA(Number(form.prazoDias)),
+        prazo: editando ? form.prazo : dataDaquiA(Number(form.prazoDias)),
         vagas: Number(form.vagas),
         empresa: form.empresa.trim(),
-      })
-      setPublicado(desafio)
+      }
+      setPublicado(editando ? await atualizarDesafio(id, dados) : await criarDesafio(dados))
     } catch (err) {
       if (err.status === 401) {
-        navigate('/login', { replace: true, state: { from: '/business/post-challenge' } })
+        navigate('/login', { replace: true, state: { from: editando ? `/business/challenge/${id}/edit` : '/business/post-challenge' } })
         return
       }
       if (err instanceof TypeError) {
         setErro('Não consegui falar com o servidor. Confira se o back-end está rodando.')
       } else if (err.status === 403) {
-        setErro('Só contas de mentor podem publicar desafios.')
+        setErro(editando ? 'Só o mentor que publicou pode editar este desafio.' : 'Só contas de mentor podem publicar desafios.')
       } else if (Object.keys(err.campos ?? {}).length) {
-        const porCampo = {}
-        Object.entries(err.campos).forEach(([campo, msg]) => { porCampo[CAMPO_DA_API[campo] ?? campo] = msg })
-        setErrosCampos(porCampo)
+        setErrosCampos(err.campos)
         setErro('Confira os campos destacados.')
       } else {
         setErro(err.message || 'Não foi possível publicar agora. Tente de novo em instantes.')
@@ -117,39 +147,43 @@ export default function PostarDesafio() {
 
   return (
     <div className="area-page">
-      <AreaTopbar pagina="NOVO DESAFIO">
+      <AreaTopbar pagina={editando ? 'EDITAR DESAFIO' : 'NOVO DESAFIO'}>
         <button type="button" className="area-link" onClick={() => navigate('/desafios')}>Ver desafios</button>
       </AreaTopbar>
 
       <div className="area-pad">
         <div className="area-header">
           <div>
-            <h1>Publique um desafio</h1>
+            <h1>{editando ? 'Edite o desafio' : 'Publique um desafio'}</h1>
             <p>Um bom desafio parte de um contexto real e deixa claro o que a pessoa precisa entregar.</p>
           </div>
-          <span className={`area-chip ${publicado ? 'sage' : ''}`}>{publicado ? 'PUBLICADO' : 'RASCUNHO'}</span>
+          <span className={`area-chip ${publicado ? 'sage' : ''}`}>
+            {publicado ? (editando ? 'SALVO' : 'PUBLICADO') : (editando ? 'EDITANDO' : 'RASCUNHO')}
+          </span>
         </div>
 
         <div className="create-layout">
           {publicado ? (
             <section className="form-card publish-success" aria-live="polite">
-              <div className="micro-label">Desafio publicado</div>
+              <div className="micro-label">{editando ? 'Alterações salvas' : 'Desafio publicado'}</div>
               <h2>{publicado.titulo}</h2>
               <p>
-                Já está aberto para inscrições
-                {publicado.prazo ? `, com prazo até ${publicado.prazo.split('-').reverse().join('/')}` : ''}
+                {editando ? 'O desafio foi atualizado' : 'Já está aberto para inscrições'}
+                {publicado.prazo ? `, com prazo até ${formatarDia(publicado.prazo)}` : ''}
                 {publicado.vagas ? ` e ${publicado.vagas} vagas` : ''}.
               </p>
               {publicado.tecnologias && (
                 <div className="chips-list">
-                  {publicado.tecnologias.split(',').map(t => <span key={t} className="area-chip">{t.trim()}</span>)}
+                  {listaDeTecnologias(publicado.tecnologias).map(t => <span key={t} className="area-chip">{t}</span>)}
                 </div>
               )}
               <div className="publish-actions">
-                <button type="button" className="btn btn-dark" onClick={publicarOutro}>Publicar outro desafio</button>
-                <button type="button" className="btn btn-outline-paper" onClick={() => navigate('/desafios')}>Ver lista de desafios</button>
+                <button type="button" className="btn btn-dark" onClick={() => navigate('/business/profile')}>Ver meus desafios</button>
+                {!editando && <button type="button" className="btn btn-outline-paper" onClick={publicarOutro}>Publicar outro desafio</button>}
               </div>
             </section>
+          ) : carregando ? (
+            <div className="area-empty">Carregando desafio…</div>
           ) : (
             <form className="form-card" onSubmit={whenSubmit}>
               {erro && <p className="area-alert" role="alert">{erro}</p>}
@@ -194,11 +228,20 @@ export default function PostarDesafio() {
                   {errosCampos.nivel && <span className="field-error">{errosCampos.nivel}</span>}
                 </div>
                 <div className="field">
-                  <label htmlFor="prazoDias">Prazo</label>
-                  <select id="prazoDias" value={form.prazoDias} onChange={refreshForm}>
-                    {PRAZOS.map(p => <option key={p} value={p}>{p} dias</option>)}
-                  </select>
-                  {errosCampos.prazoDias && <span className="field-error">{errosCampos.prazoDias}</span>}
+                  {editando ? (
+                    <>
+                      <label htmlFor="prazo">Prazo</label>
+                      <input id="prazo" type="date" value={form.prazo} onChange={refreshForm} required />
+                    </>
+                  ) : (
+                    <>
+                      <label htmlFor="prazoDias">Prazo</label>
+                      <select id="prazoDias" value={form.prazoDias} onChange={refreshForm}>
+                        {PRAZOS.map(p => <option key={p} value={p}>{p} dias</option>)}
+                      </select>
+                    </>
+                  )}
+                  {errosCampos.prazo && <span className="field-error">{errosCampos.prazo}</span>}
                 </div>
                 <div className="field">
                   <label htmlFor="vagas">Vagas</label>
@@ -214,7 +257,7 @@ export default function PostarDesafio() {
               </div>
 
               <button type="submit" className="btn btn-dark" disabled={enviando}>
-                {enviando ? 'Publicando…' : 'Publicar desafio'} <span className="arrow" aria-hidden="true">→</span>
+                {enviando ? 'Salvando…' : (editando ? 'Salvar alterações' : 'Publicar desafio')} <span className="arrow" aria-hidden="true">→</span>
               </button>
             </form>
           )}

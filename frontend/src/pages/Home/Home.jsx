@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router'
 import Logo from '../../components/Logo/Logo'
+import { getUser } from '../../services/api'
+import { destinoInicial } from '../../services/auth'
 import './Home.css'
 
 const activityCells = [
@@ -13,6 +15,7 @@ const activityCells = [
 
 export default function Home() {
   const navigate = useNavigate()
+  const usuario = getUser()
 
   return (
     <main className="home-shell">
@@ -20,10 +23,19 @@ export default function Home() {
         <Logo />
 
         <div className="home-nav-links">
-          <button type="button" onClick={() => navigate('/login')}>Entrar</button>
-          <button type="button" className="btn btn-primary btn-small" onClick={() => navigate('/register')}>
-            Criar perfil
-          </button>
+          <button type="button" onClick={() => navigate('/metricas')}>Métricas</button>
+          {usuario ? (
+            <button type="button" className="btn btn-primary btn-small" onClick={() => navigate(destinoInicial(usuario.type))}>
+              Meu perfil
+            </button>
+          ) : (
+            <>
+              <button type="button" onClick={() => navigate('/login')}>Entrar</button>
+              <button type="button" className="btn btn-primary btn-small" onClick={() => navigate('/register')}>
+                Criar perfil
+              </button>
+            </>
+          )}
         </div>
       </nav>
 
@@ -40,7 +52,7 @@ export default function Home() {
           </p>
 
           <div className="home-ctas">
-            <button type="button" className="btn btn-primary" onClick={() => navigate('/desafios')}>
+            <button type="button" className="btn btn-primary" onClick={() => navigate('/student/search')}>
               Explorar desafios
             </button>
           </div>
