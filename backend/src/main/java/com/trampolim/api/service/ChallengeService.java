@@ -1,6 +1,6 @@
 package com.trampolim.api.service;
 
-import com.trampolim.api.dto.ChallengeDTO;
+import com.trampolim.api.dto.DesafioDTO;
 import com.trampolim.api.entity.Challenge;
 import com.trampolim.api.entity.User;
 import com.trampolim.api.exception.ApiException;
@@ -22,41 +22,29 @@ public class ChallengeService {
     }
 
     // Só mentor chega aqui (SecurityConfig: POST /api/desafios -> hasRole MENTOR)
-    public Challenge createChallenge(ChallengeDTO dto) {
-        User creator = userService.getAuthenticatedUser();
+    public Challenge criarDesafio(DesafioDTO dto) {
+        User criador = userService.getAuthenticatedUser();
 
         Challenge challenge = new Challenge();
-        challenge.setTitle(dto.getTitle().trim());
-        challenge.setDescription(dto.getDescription().trim());
-        challenge.setLevel(dto.getLevel().toUpperCase());
-        challenge.setTechnologies(juntarTecnologias(dto.getTechnologies()));
-        challenge.setCompanyName(textoOuNulo(dto.getCompanyName()));
-        challenge.setDeadlineDays(dto.getDeadlineDays() != null ? dto.getDeadlineDays() : 7);
-        challenge.setSlots(dto.getSlots());
-        challenge.setStatus("ABERTO");
-        challenge.setCreatedAt(LocalDateTime.now());
-        challenge.setCreator(creator);
+        challenge.setTitulo(dto.getTitulo().trim());
+        challenge.setDescricao(dto.getDescricao().trim());
+        challenge.setTecnologias(dto.getTecnologias().trim());
+        challenge.setNivel(dto.getNivel().toUpperCase());
+        challenge.setPrazo(dto.getPrazo());
+        challenge.setVagas(dto.getVagas());
+        challenge.setEmpresa(dto.getEmpresa().trim());
+        challenge.setDataCriacao(LocalDateTime.now());
+        challenge.setCriador(criador);
 
         return challengeRepository.save(challenge);
     }
 
-    // ALTERAÇÃO AQUI: Usamos o novo método que busca junto com o criador
-    public List<Challenge> getAllChallenges() {
+    public List<Challenge> listarTodosDesafios() {
         return challengeRepository.findAllWithCreator();
     }
 
-    public Challenge getChallenge(Long id) {
+    public Challenge buscarDesafioPorId(Long id) {
         return challengeRepository.findByIdWithCreator(id)
                 .orElseThrow(() -> ApiException.notFound("Desafio não encontrado."));
-    }
-
-    private static String juntarTecnologias(List<String> tecnologias) {
-        if (tecnologias == null) return null;
-        String juntas = String.join(", ", tecnologias.stream().map(String::trim).filter(t -> !t.isEmpty()).toList());
-        return juntas.isEmpty() ? null : juntas;
-    }
-
-    private static String textoOuNulo(String texto) {
-        return texto == null || texto.isBlank() ? null : texto.trim();
     }
 }

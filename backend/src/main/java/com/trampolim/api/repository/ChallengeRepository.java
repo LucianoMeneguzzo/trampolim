@@ -11,11 +11,12 @@ import java.util.Optional;
 @Repository
 public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
 
-    // Consulta personalizada que busca o desafio E o criador de uma só vez (evita LazyInitializationException).
-    // LEFT JOIN para não sumir com desafios antigos que não têm criador.
-    @Query("SELECT c FROM Challenge c LEFT JOIN FETCH c.creator ORDER BY c.createdAt DESC")
+    // Busca todos os desafios trazendo o criador de uma vez (evita LazyInitializationException)
+    // LEFT JOIN para não sumir com desafios antigos que não têm criador
+    @Query("SELECT c FROM Challenge c LEFT JOIN FETCH c.criador ORDER BY c.dataCriacao DESC")
     List<Challenge> findAllWithCreator();
 
-    @Query("SELECT c FROM Challenge c LEFT JOIN FETCH c.creator WHERE c.id = :id")
+    // Busca um desafio específico pelo ID, trazendo o criador
+    @Query("SELECT c FROM Challenge c LEFT JOIN FETCH c.criador WHERE c.id = :id")
     Optional<Challenge> findByIdWithCreator(Long id);
 }

@@ -23,6 +23,6 @@ public interface CandidaturaRepository extends JpaRepository<Candidatura, Long> 
 
     // Busca uma candidatura específica pelo ID, trazendo candidato, desafio e o mentor dono do desafio
     // (para conferir permissão) e evitar LazyInitializationException
-    @Query("SELECT c FROM Candidatura c JOIN FETCH c.candidato JOIN FETCH c.desafio d LEFT JOIN FETCH d.creator WHERE c.id = :id")
+    @Query("SELECT c FROM Candidatura c JOIN FETCH c.candidato JOIN FETCH c.desafio d LEFT JOIN FETCH d.criador WHERE c.id = :id")
     Optional<Candidatura> findByIdWithDetails(Long id);
 }

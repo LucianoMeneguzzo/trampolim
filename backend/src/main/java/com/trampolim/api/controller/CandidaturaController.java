@@ -3,9 +3,9 @@ package com.trampolim.api.controller;
 import com.trampolim.api.dto.AvaliacaoDTO;
 import com.trampolim.api.dto.AvaliacaoRespostaDTO;
 import com.trampolim.api.dto.CandidaturaDTO;
-import com.trampolim.api.dto.CandidaturaDetalheDTO;
 import com.trampolim.api.dto.CandidaturaRespostaDTO;
 import com.trampolim.api.dto.EnvioDTO;
+import com.trampolim.api.entity.Avaliacao;
 import com.trampolim.api.entity.Candidatura;
 import com.trampolim.api.service.AvaliacaoService;
 import com.trampolim.api.service.CandidaturaService;
@@ -30,32 +30,24 @@ public class CandidaturaController {
         this.avaliacaoService = avaliacaoService;
     }
 
-    // Aluno se inscreve em um desafio — só STUDENT
+    // Aluno se candidata a um desafio
     @PostMapping
-    public ResponseEntity<Candidatura> aplicar(@RequestBody @Valid CandidaturaDTO dto) {
+    public ResponseEntity<CandidaturaRespostaDTO> aplicar(@RequestBody @Valid CandidaturaDTO dto) {
         Candidatura novaCandidatura = candidaturaService.aplicarParaDesafio(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novaCandidatura);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new CandidaturaRespostaDTO(novaCandidatura));
     }
 
-    // Inscrições de um desafio — só o MENTOR dono do desafio
+    // Mentor dono do desafio lista as candidaturas
     @GetMapping("/desafio/{desafioId}")
     public ResponseEntity<List<CandidaturaRespostaDTO>> listarCandidaturasPorDesafio(@PathVariable Long desafioId) {
         List<Candidatura> candidaturas = candidaturaService.listarCandidaturasPorDesafio(desafioId);
-
         List<CandidaturaRespostaDTO> resposta = candidaturas.stream()
                 .map(CandidaturaRespostaDTO::new)
                 .collect(Collectors.toList());
-
         return ResponseEntity.ok(resposta);
     }
 
-    // Detalhe de uma inscrição/entrega — mentor dono do desafio ou o próprio aluno
-    @GetMapping("/{id}")
-    public ResponseEntity<CandidaturaDetalheDTO> buscar(@PathVariable Long id) {
-        return ResponseEntity.ok(candidaturaService.buscarDetalhe(id));
-    }
-
-    // Endpoint para o Mentor aprovar ou rejeitar uma candidatura
+    // Mentor dono do desafio aprova ou rejeita a candidatura
     @PatchMapping("/{id}/status")
     public ResponseEntity<CandidaturaRespostaDTO> atualizarStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         String novoStatus = body.get("status");
@@ -63,15 +55,23 @@ public class CandidaturaController {
         return ResponseEntity.ok(new CandidaturaRespostaDTO(candidaturaAtualizada));
     }
 
-    // Aluno envia o link do repositório — só STUDENT dono da inscrição
-    @PutMapping("/{id}/envio")
-    public ResponseEntity<CandidaturaDetalheDTO> enviar(@PathVariable Long id, @RequestBody @Valid EnvioDTO dto) {
-        return ResponseEntity.ok(candidaturaService.enviarProjeto(id, dto));
+    // Detalhe de uma candidatura, com a avaliação se já houver — mentor dono do desafio ou o próprio aluno
+    @GetMapping("/{id}")
+    public ResponseEntity<CandidaturaRespostaDTO> buscarCandidaturaPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(candidaturaService.buscarCandidaturaPorId(id));
     }
 
-    // Mentor avalia a entrega com nota + feedback — só MENTOR dono do desafio
+    // Aluno envia o link do projeto
+    @PutMapping("/{id}/envio")
+    public ResponseEntity<CandidaturaRespostaDTO> enviarProjeto(@PathVariable Long id, @RequestBody @Valid EnvioDTO dto) {
+        Candidatura candidaturaAtualizada = candidaturaService.enviarProjeto(id, dto);
+        return ResponseEntity.ok(new CandidaturaRespostaDTO(candidaturaAtualizada));
+    }
+
+    // Mentor avalia a candidatura (apenas o criador do desafio pode avaliar)
     @PostMapping("/{id}/avaliacao")
-    public ResponseEntity<AvaliacaoRespostaDTO> avaliar(@PathVariable Long id, @RequestBody @Valid AvaliacaoDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(avaliacaoService.avaliar(id, dto));
+    public ResponseEntity<AvaliacaoRespostaDTO> avaliarCandidatura(@PathVariable Long id, @RequestBody @Valid AvaliacaoDTO dto) {
+        Avaliacao novaAvaliacao = avaliacaoService.avaliarCandidatura(id, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new AvaliacaoRespostaDTO(novaAvaliacao));
     }
 }

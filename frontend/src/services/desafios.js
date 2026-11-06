@@ -7,19 +7,11 @@ export const NIVEIS = [
   { valor: 'AVANCADO', label: 'Avançado' },
 ]
 
-// POST /api/desafios (só mentor)
-export function criarDesafio({ titulo, descricao, nivel, tecnologias, prazoDias, vagas, empresa }) {
+// POST /api/desafios (só mentor). tecnologias é um texto ("Java, Spring Boot") e prazo uma data (AAAA-MM-DD)
+export function criarDesafio({ titulo, descricao, tecnologias, nivel, prazo, vagas, empresa }) {
   return apiFetch('/api/desafios', {
     method: 'POST',
-    body: JSON.stringify({
-      title: titulo,
-      description: descricao,
-      level: nivel,
-      technologies: tecnologias,
-      deadlineDays: prazoDias,
-      slots: vagas,
-      companyName: empresa || null,
-    }),
+    body: JSON.stringify({ titulo, descricao, tecnologias, nivel, prazo, vagas, empresa }),
   })
 }
 

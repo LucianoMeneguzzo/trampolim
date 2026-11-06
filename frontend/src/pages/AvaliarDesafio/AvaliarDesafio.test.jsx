@@ -9,14 +9,12 @@ const ENTREGA = {
   status: 'ENVIADO',
   dataCandidatura: '2026-10-20T10:00:00',
   dataEnvio: '2026-10-26T14:32:00',
-  linkRepositorio: 'https://github.com/ana-martins/api-pedidos',
+  linkEnvio: 'https://github.com/ana-martins/api-pedidos',
   repoLinguagem: 'Java',
   repoUltimoCommit: null,
-  candidatoId: 2,
   nomeCandidato: 'Ana Martins',
-  desafioId: 3,
+  emailCandidato: 'ana@trampolim.dev',
   tituloDesafio: 'API de pedidos',
-  prazoDias: 7,
   avaliacao: null,
 }
 
@@ -42,7 +40,7 @@ describe('AvaliarDesafio', () => {
   it('carrega a entrega e publica nota + feedback', async () => {
     const fetch = mockFetch(
       [200, ENTREGA],
-      [201, { id: 1, candidaturaId: 12, nota: 8.5, feedback: FEEDBACK, dataAvaliacao: '2026-10-27T09:00:00', nomeMentor: 'Rafael Freitas' }],
+      [201, { id: 1, candidaturaId: 12, nota: 8, feedback: FEEDBACK, dataAvaliacao: '2026-10-27T09:00:00', nomeMentor: 'Rafael Freitas' }],
     )
     renderTela()
 
@@ -50,17 +48,17 @@ describe('AvaliarDesafio', () => {
     expect(screen.getByText('github.com/ana-martins/api-pedidos')).toBeInTheDocument()
     expect(fetch.mock.calls[0][0]).toMatch(/\/api\/candidaturas\/12$/)
 
-    fireEvent.change(screen.getByLabelText('Nota atribuída'), { target: { value: '8.5' } })
+    fireEvent.change(screen.getByLabelText('Nota atribuída'), { target: { value: '8' } })
     fireEvent.change(screen.getByLabelText('Feedback para Ana'), { target: { value: FEEDBACK } })
     fireEvent.click(screen.getByRole('button', { name: /Publicar avaliação para Ana/ }))
 
     expect(await screen.findByRole('heading', { name: 'Avaliação publicada' })).toBeInTheDocument()
     expect(fetch.mock.calls[1][0]).toMatch(/\/api\/candidaturas\/12\/avaliacao$/)
-    expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual({ nota: 8.5, feedback: FEEDBACK })
+    expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual({ nota: 8, feedback: FEEDBACK })
   })
 
   it('não libera a avaliação enquanto o aluno não enviou o projeto', async () => {
-    mockFetch([200, { ...ENTREGA, status: 'PENDENTE', linkRepositorio: null, dataEnvio: null }])
+    mockFetch([200, { ...ENTREGA, status: 'PENDENTE', linkEnvio: null, dataEnvio: null }])
     renderTela()
 
     expect(await screen.findByText('Projeto ainda não enviado')).toBeInTheDocument()
@@ -76,7 +74,7 @@ describe('AvaliarDesafio', () => {
     renderTela()
 
     expect(await screen.findByRole('heading', { name: 'Avaliação publicada' })).toBeInTheDocument()
-    expect(screen.getByText('9.0')).toBeInTheDocument()
+    expect(screen.getByText('9')).toBeInTheDocument()
     expect(screen.queryByLabelText('Feedback para Ana')).not.toBeInTheDocument()
   })
 

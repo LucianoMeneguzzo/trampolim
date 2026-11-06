@@ -7,8 +7,6 @@
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .field-row.thirds { grid-template-columns: 1.1fr 1fr .7fr; }
 
-.label-optional { text-transform: none; letter-spacing: 0; font-family: var(--body); font-weight: 400; }
-
 .chips-input {
   display: flex;
   flex-wrap: wrap;

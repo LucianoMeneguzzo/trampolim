@@ -11,7 +11,7 @@ import { iniciais } from '../../utils/iniciais'
 import './AvaliarDesafio.css'
 
 const FEEDBACK_MIN = 20
-const FEEDBACK_MAX = 3000
+const FEEDBACK_MAX = 2000
 
 const MSG_CARREGAMENTO = {
   403: 'Esta entrega pertence a um desafio de outro mentor.',
@@ -102,7 +102,7 @@ export default function AvaliarDesafio() {
 
   const primeiroNome = entrega?.nomeCandidato?.split(' ')[0] ?? 'o aluno'
   const avaliacao = entrega?.avaliacao
-  const semEnvio = entrega && !entrega.linkRepositorio
+  const semEnvio = entrega && !entrega.linkEnvio
   const feedbackCurto = feedback.trim().length < FEEDBACK_MIN
 
   let status = 'Carregando'
@@ -148,13 +148,13 @@ export default function AvaliarDesafio() {
               </div>
 
               <div className="repo-preview">
-                {entrega.linkRepositorio ? (
+                {entrega.linkEnvio ? (
                   <>
                     <div>
-                      <strong>{semProtocolo(entrega.linkRepositorio)}</strong>
+                      <strong>{semProtocolo(entrega.linkEnvio)}</strong>
                       <span>Enviado em {formatarData(entrega.dataEnvio)}</span>
                     </div>
-                    <a className="profile-link" href={entrega.linkRepositorio} target="_blank" rel="noreferrer">Abrir repo ↗</a>
+                    <a className="profile-link" href={entrega.linkEnvio} target="_blank" rel="noreferrer">Abrir repo ↗</a>
                   </>
                 ) : (
                   <div>
@@ -179,7 +179,7 @@ export default function AvaliarDesafio() {
                 <h2>Avaliação publicada</h2>
                 <p>Por {avaliacao.nomeMentor} em {formatarData(avaliacao.dataAvaliacao)}.</p>
                 <div className="score-wrap">
-                  <div className="score-value">{Number(avaliacao.nota).toFixed(1)}<small>/10</small></div>
+                  <div className="score-value">{avaliacao.nota}<small>/10</small></div>
                   <div className="score-control"><span className="score-label">Nota atribuída</span></div>
                 </div>
                 <p className="review-feedback">{avaliacao.feedback}</p>
@@ -190,12 +190,12 @@ export default function AvaliarDesafio() {
                 <p>Seja específico sobre o que funcionou e qual seria o próximo passo de evolução.</p>
 
                 <div className="score-wrap">
-                  <div className="score-value" aria-hidden="true">{nota.toFixed(1)}<small>/10</small></div>
+                  <div className="score-value" aria-hidden="true">{nota}<small>/10</small></div>
                   <div className="score-control">
                     <label htmlFor="score-input">Nota atribuída</label>
-                    <input id="score-input" type="range" min="0" max="10" step="0.5" value={nota}
+                    <input id="score-input" type="range" min="0" max="10" step="1" value={nota}
                       onChange={e => setNota(Number(e.target.value))} disabled={semEnvio}
-                      aria-valuetext={`${nota.toFixed(1)} de 10`} />
+                      aria-valuetext={`${nota} de 10`} />
                   </div>
                 </div>
 

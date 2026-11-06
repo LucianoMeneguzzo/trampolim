@@ -17,13 +17,19 @@ beforeEach(() => logarComo('MENTOR'))
 afterEach(() => {
   cleanup()
   localStorage.clear()
+  vi.useRealTimers()
   vi.unstubAllGlobals()
 })
 
 describe('PostarDesafio', () => {
-  it('publica o desafio com as tecnologias adicionadas e mostra a confirmação', async () => {
+  it('publica o desafio no formato da API e mostra a confirmação', async () => {
+    // Fim de mês, tarde da noite: o prazo vira de mês e não pode andar um dia por causa do fuso
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 10, 25, 23, 30))
+    logarComo('MENTOR')
+
     const fetch = mockFetch([201, {
-      id: 3, titulo: 'API de pedidos', nivel: 'AVANCADO', tecnologias: ['Java', 'Spring Boot'], prazoDias: 14, vagas: 5,
+      id: 3, titulo: 'API de pedidos', nivel: 'AVANCADO', tecnologias: 'Java, Spring Boot', prazo: '2026-12-09', vagas: 5, empresa: 'Loja Horizonte',
     }])
     renderTela()
 
@@ -37,20 +43,23 @@ describe('PostarDesafio', () => {
     fireEvent.change(screen.getByLabelText('Nível'), { target: { value: 'AVANCADO' } })
     fireEvent.change(screen.getByLabelText('Prazo'), { target: { value: '14' } })
     fireEvent.change(screen.getByLabelText('Vagas'), { target: { value: '5' } })
+    fireEvent.change(screen.getByLabelText('Em nome de uma empresa'), { target: { value: ' Loja Horizonte ' } })
     fireEvent.click(screen.getByRole('button', { name: /Publicar desafio/ }))
 
     expect(await screen.findByText('Desafio publicado')).toBeInTheDocument()
+    expect(screen.getByText(/com prazo até 09\/12\/2026 e 5 vagas/)).toBeInTheDocument()
+    expect(screen.getByText('Spring Boot')).toBeInTheDocument()
     const [url, opcoes] = fetch.mock.calls[0]
     expect(url).toMatch(/\/api\/desafios$/)
     expect(opcoes.headers.Authorization).toMatch(/^Bearer /)
     expect(JSON.parse(opcoes.body)).toEqual({
-      title: 'API de pedidos',
-      description: 'A loja precisa sair da planilha.',
-      level: 'AVANCADO',
-      technologies: ['Java', 'Spring Boot'],
-      deadlineDays: 14,
-      slots: 5,
-      companyName: null,
+      titulo: 'API de pedidos',
+      descricao: 'A loja precisa sair da planilha.',
+      tecnologias: 'Java, Spring Boot',
+      nivel: 'AVANCADO',
+      prazo: '2026-12-09',
+      vagas: 5,
+      empresa: 'Loja Horizonte',
     })
   })
 
@@ -66,7 +75,7 @@ describe('PostarDesafio', () => {
   })
 
   it('mostra os erros de validação vindos do back ao lado de cada campo', async () => {
-    mockFetch([400, { title: 'O título é obrigatório' }])
+    mockFetch([400, { titulo: 'O título é obrigatório', prazo: 'O prazo é obrigatório', tecnologias: 'As tecnologias são obrigatórias' }])
     renderTela()
 
     fireEvent.change(screen.getByLabelText('Título do desafio'), { target: { value: ' ' } })
@@ -74,6 +83,8 @@ describe('PostarDesafio', () => {
     fireEvent.submit(screen.getByRole('button', { name: /Publicar desafio/ }).closest('form'))
 
     expect(await screen.findByText('O título é obrigatório')).toBeInTheDocument()
+    expect(screen.getByText('O prazo é obrigatório')).toBeInTheDocument()
+    expect(screen.getByText('As tecnologias são obrigatórias')).toBeInTheDocument()
     expect(screen.getByRole('alert')).toHaveTextContent('Confira os campos destacados.')
   })
 })

@@ -37,7 +37,7 @@ npm run dev
 
 - **Sem o arquivo `backend/.env`** o backend sobe com banco em memória (H2) e já cria dados de exemplo. Os dados somem quando ele para.
   - Mentor: `mentor@trampolim.local` / `senha-teste-123`
-  - Aluna: `aluna@trampolim.local` / `senha-teste-123`
+  - Aluno: `student@trampolim.local` / `senha-teste-123`
 - **Para usar o banco do time (Supabase)**, copie `backend/.env.example` para `backend/.env` e preencha (peça os valores ao time).
 - Testes: `./mvnw test` no backend e `npm test` no front-end.
 - Rotas da API e quem pode acessar cada uma: [backend/README.md](backend/README.md).

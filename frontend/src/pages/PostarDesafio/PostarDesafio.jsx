@@ -19,15 +19,16 @@ const FORM_INICIAL = {
   empresa: '',
 }
 
-// Os erros de validação do back vêm com o nome do campo da API (title, level...)
-const CAMPO_DA_API = {
-  title: 'titulo',
-  description: 'descricao',
-  level: 'nivel',
-  technologies: 'tecnologias',
-  deadlineDays: 'prazoDias',
-  slots: 'vagas',
-  companyName: 'empresa',
+// Os erros de validação do back vêm com o nome do campo da API; só o prazo tem outro nome no formulário
+const CAMPO_DA_API = { prazo: 'prazoDias' }
+
+// O formulário escolhe "7 dias"; a API recebe a data final (AAAA-MM-DD, no fuso de quem publica)
+function dataDaquiA(dias) {
+  const data = new Date()
+  data.setDate(data.getDate() + dias)
+  const mes = String(data.getMonth() + 1).padStart(2, '0')
+  const dia = String(data.getDate()).padStart(2, '0')
+  return `${data.getFullYear()}-${mes}-${dia}`
 }
 
 export default function PostarDesafio() {
@@ -77,11 +78,11 @@ export default function PostarDesafio() {
 
     try {
       const desafio = await criarDesafio({
-        ...form,
         titulo: form.titulo.trim(),
         descricao: form.descricao.trim(),
-        tecnologias,
-        prazoDias: Number(form.prazoDias),
+        tecnologias: tecnologias.join(', '),
+        nivel: form.nivel,
+        prazo: dataDaquiA(Number(form.prazoDias)),
         vagas: Number(form.vagas),
         empresa: form.empresa.trim(),
       })
@@ -136,12 +137,12 @@ export default function PostarDesafio() {
               <h2>{publicado.titulo}</h2>
               <p>
                 Já está aberto para inscrições
-                {publicado.prazoDias ? `, com prazo de ${publicado.prazoDias} dias` : ''}
+                {publicado.prazo ? `, com prazo até ${publicado.prazo.split('-').reverse().join('/')}` : ''}
                 {publicado.vagas ? ` e ${publicado.vagas} vagas` : ''}.
               </p>
-              {publicado.tecnologias?.length > 0 && (
+              {publicado.tecnologias && (
                 <div className="chips-list">
-                  {publicado.tecnologias.map(t => <span key={t} className="area-chip">{t}</span>)}
+                  {publicado.tecnologias.split(',').map(t => <span key={t} className="area-chip">{t.trim()}</span>)}
                 </div>
               )}
               <div className="publish-actions">
@@ -162,7 +163,7 @@ export default function PostarDesafio() {
 
               <div className="field">
                 <label htmlFor="descricao">Contexto e objetivo</label>
-                <textarea id="descricao" value={form.descricao} onChange={refreshForm} required
+                <textarea id="descricao" value={form.descricao} onChange={refreshForm} maxLength={2000} required
                   placeholder="Qual problema existe, para quem, e o que a entrega precisa resolver?" />
                 {errosCampos.descricao && <span className="field-error">{errosCampos.descricao}</span>}
               </div>
@@ -207,10 +208,8 @@ export default function PostarDesafio() {
               </div>
 
               <div className="field">
-                <label htmlFor="empresa">
-                  Em nome de uma empresa <span className="label-optional">(opcional)</span>
-                </label>
-                <input id="empresa" value={form.empresa} onChange={refreshForm} maxLength={150} placeholder="Ex.: Loja Horizonte" />
+                <label htmlFor="empresa">Em nome de uma empresa</label>
+                <input id="empresa" value={form.empresa} onChange={refreshForm} maxLength={150} required placeholder="Ex.: Loja Horizonte" />
                 {errosCampos.empresa && <span className="field-error">{errosCampos.empresa}</span>}
               </div>
 

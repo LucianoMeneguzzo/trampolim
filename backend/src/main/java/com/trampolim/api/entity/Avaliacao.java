@@ -2,10 +2,8 @@ package com.trampolim.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-// Nota + feedback que o mentor dá para uma entrega. Cada candidatura tem no máximo uma avaliação.
 @Entity
 @Table(name = "avaliacoes")
 public class Avaliacao {
@@ -14,27 +12,28 @@ public class Avaliacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "candidatura_id", nullable = false, unique = true)
     @JsonIgnore
     private Candidatura candidatura;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mentor_id", nullable = false)
     @JsonIgnore
     private User mentor;
 
-    @Column(name = "nota", nullable = false, precision = 3, scale = 1)
-    private BigDecimal nota; // 0.0 a 10.0
+    @Column(nullable = false)
+    private Integer nota; // 0 a 10
 
-    @Column(name = "feedback", columnDefinition = "TEXT", nullable = false)
+    @Column(nullable = false, length = 2000)
     private String feedback;
 
-    @Column(name = "data_avaliacao", nullable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime dataAvaliacao;
 
-    // Construtor vazio (exigido pelo JPA)
-    public Avaliacao() {}
+    public Avaliacao() {
+        this.dataAvaliacao = LocalDateTime.now();
+    }
 
     // Getters e Setters
     public Long getId() { return id; }
@@ -46,8 +45,8 @@ public class Avaliacao {
     public User getMentor() { return mentor; }
     public void setMentor(User mentor) { this.mentor = mentor; }
 
-    public BigDecimal getNota() { return nota; }
-    public void setNota(BigDecimal nota) { this.nota = nota; }
+    public Integer getNota() { return nota; }
+    public void setNota(Integer nota) { this.nota = nota; }
 
     public String getFeedback() { return feedback; }
     public void setFeedback(String feedback) { this.feedback = feedback; }

@@ -1,5 +1,6 @@
 package com.trampolim.api.dto;
 
+import com.trampolim.api.entity.Avaliacao;
 import com.trampolim.api.entity.Candidatura;
 import java.time.LocalDateTime;
 
@@ -11,17 +12,23 @@ public class CandidaturaRespostaDTO {
     private String nomeCandidato;
     private String emailCandidato;
     private String tituloDesafio;
+    private String linkEnvio;
+    private LocalDateTime dataEnvio;
+    private String repoLinguagem;
+    private LocalDateTime repoUltimoCommit;
+    private AvaliacaoRespostaDTO avaliacao; // só vem preenchida em GET /api/candidaturas/{id}, depois da avaliação
 
-    // Construtor vazio
     public CandidaturaRespostaDTO() {}
 
-    // Construtor inteligente: recebe a entidade Candidatura e mapeia apenas o que queremos mostrar
     public CandidaturaRespostaDTO(Candidatura candidatura) {
         this.id = candidatura.getId();
         this.status = candidatura.getStatus();
         this.dataCandidatura = candidatura.getDataCandidatura();
+        this.linkEnvio = candidatura.getLinkEnvio();
+        this.dataEnvio = candidatura.getDataEnvio();
+        this.repoLinguagem = candidatura.getRepoLinguagem();
+        this.repoUltimoCommit = candidatura.getRepoUltimoCommit();
 
-        // Verifica se existe um candidato vinculado
         if (candidatura.getCandidato() != null) {
             this.nomeCandidato = candidatura.getCandidato().getName();
             this.emailCandidato = candidatura.getCandidato().getEmail();
@@ -30,12 +37,17 @@ public class CandidaturaRespostaDTO {
             this.emailCandidato = "Desconhecido";
         }
 
-        // Verifica se existe um desafio vinculado
         if (candidatura.getDesafio() != null) {
-            this.tituloDesafio = candidatura.getDesafio().getTitle();
+            this.tituloDesafio = candidatura.getDesafio().getTitulo();
         } else {
             this.tituloDesafio = "Desafio Desconhecido";
         }
+    }
+
+    // Tudo que a tela "Avalie a entrega" (/business/assessment/:id) precisa numa só chamada
+    public CandidaturaRespostaDTO(Candidatura candidatura, Avaliacao avaliacao) {
+        this(candidatura);
+        this.avaliacao = avaliacao != null ? new AvaliacaoRespostaDTO(avaliacao) : null;
     }
 
     // Getters
@@ -45,4 +57,9 @@ public class CandidaturaRespostaDTO {
     public String getNomeCandidato() { return nomeCandidato; }
     public String getEmailCandidato() { return emailCandidato; }
     public String getTituloDesafio() { return tituloDesafio; }
+    public String getLinkEnvio() { return linkEnvio; }
+    public LocalDateTime getDataEnvio() { return dataEnvio; }
+    public String getRepoLinguagem() { return repoLinguagem; }
+    public LocalDateTime getRepoUltimoCommit() { return repoUltimoCommit; }
+    public AvaliacaoRespostaDTO getAvaliacao() { return avaliacao; }
 }

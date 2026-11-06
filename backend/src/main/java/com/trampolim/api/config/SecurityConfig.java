@@ -1,6 +1,7 @@
 package com.trampolim.api.config;
 
 import com.trampolim.api.security.JwtAuthenticationFilter;
+import com.trampolim.api.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,18 +33,16 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomUserDetailsService customUserDetailsService;
 
     // Lista separada por vírgula, ex: http://localhost:5173,https://trampolim.vercel.app
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                          CustomUserDetailsService customUserDetailsService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @Bean
@@ -49,24 +50,28 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults()) // usa o bean corsConfigurationSource abaixo
+                .headers(headers -> headers.frameOptions(frame -> frame.disable())) // necessário pro H2 Console
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Público
+                        // Públicas
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**", "/error").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/desafios", "/api/desafios/*").permitAll()
-                        // Só mentor (área /business do front)
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/error").permitAll()
+
+                        // Desafios
+                        .requestMatchers(HttpMethod.GET, "/api/desafios", "/api/desafios/*").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/desafios").hasRole("MENTOR")
-                        .requestMatchers("/api/candidaturas/desafio/**").hasRole("MENTOR")
-                        .requestMatchers(HttpMethod.PATCH, "/api/candidaturas/*/status").hasRole("MENTOR")
-                        .requestMatchers(HttpMethod.POST, "/api/candidaturas/*/avaliacao").hasRole("MENTOR")
-                        // Só aluno (área /student do front)
+
+                        // Candidaturas
                         .requestMatchers(HttpMethod.POST, "/api/candidaturas").hasRole("STUDENT")
                         .requestMatchers(HttpMethod.PUT, "/api/candidaturas/*/envio").hasRole("STUDENT")
-                        // Qualquer usuário logado
+                        .requestMatchers(HttpMethod.POST, "/api/candidaturas/*/avaliacao").hasRole("MENTOR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/candidaturas/*/status").hasRole("MENTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/candidaturas/desafio/*").hasRole("MENTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/candidaturas/**").authenticated()
+
                         .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .exceptionHandling(ex -> ex
                         // Sem token / token inválido ou expirado -> 401
@@ -76,6 +81,7 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, e) ->
                                 escreverErro(response, HttpServletResponse.SC_FORBIDDEN, "Seu perfil não tem permissão para esta ação."))
                 )
+                .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -93,8 +99,21 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(customUserDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     // Mesmo formato do GlobalExceptionHandler: { "erro": "..." }
