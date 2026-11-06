@@ -4,6 +4,7 @@ import com.trampolim.api.entity.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class UserRegistrationDTO {
@@ -26,9 +27,18 @@ public class UserRegistrationDTO {
     private UserType type;
 
     // Campos opcionais
+    @Size(max = 2000, message = "A bio pode ter no máximo 2000 caracteres")
     private String bio;
+
+    @Size(max = 150, message = "O link do GitHub pode ter no máximo 150 caracteres")
+    @Pattern(regexp = PerfilDTO.REGEX_GITHUB, message = PerfilDTO.MENSAGEM_GITHUB)
     private String github;
+
+    @Size(max = 150, message = "O link do LinkedIn pode ter no máximo 150 caracteres")
+    @Pattern(regexp = PerfilDTO.REGEX_LINKEDIN, message = PerfilDTO.MENSAGEM_LINKEDIN)
     private String linkedin;
+
+    @Size(max = 100, message = "O título profissional pode ter no máximo 100 caracteres")
     private String professionalTitle;
 
     // Getters e Setters

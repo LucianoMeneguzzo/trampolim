@@ -50,7 +50,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults()) // usa o bean corsConfigurationSource abaixo
-                .headers(headers -> headers.frameOptions(frame -> frame.disable())) // necessário pro H2 Console
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // o H2 Console usa frames da própria origem
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Públicas
@@ -59,9 +59,10 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
 
-                        // Desafios
-                        .requestMatchers(HttpMethod.GET, "/api/desafios", "/api/desafios/*").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/desafios").hasRole("MENTOR")
+                        // Desafios: ver é público; publicar, editar, fechar e apagar é do mentor
+                        .requestMatchers(HttpMethod.GET, "/api/desafios/meus").hasRole("MENTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/desafios", "/api/desafios/*").permitAll()
+                        .requestMatchers("/api/desafios/**").hasRole("MENTOR")
 
                         // Candidaturas
                         .requestMatchers(HttpMethod.POST, "/api/candidaturas").hasRole("STUDENT")
@@ -69,7 +70,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/candidaturas/*/avaliacao").hasRole("MENTOR")
                         .requestMatchers(HttpMethod.PATCH, "/api/candidaturas/*/status").hasRole("MENTOR")
                         .requestMatchers(HttpMethod.GET, "/api/candidaturas/desafio/*").hasRole("MENTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/candidaturas/minhas").hasRole("STUDENT")
                         .requestMatchers(HttpMethod.GET, "/api/candidaturas/**").authenticated()
+
+                        // Perfil público e métricas abrem sem login; /me é sempre do usuário logado
+                        .requestMatchers("/api/usuarios/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/usuarios/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/metricas").permitAll()
 
                         .anyRequest().authenticated()
                 )

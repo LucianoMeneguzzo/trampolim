@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -37,9 +38,31 @@ public class ChallengeController {
         return ResponseEntity.ok(resposta);
     }
 
+    // Desafios do mentor logado, com a contagem de inscritos e entregas
+    @GetMapping("/meus")
+    public ResponseEntity<List<DesafioRespostaDTO>> listarMeusDesafios() {
+        return ResponseEntity.ok(challengeService.listarMeusDesafios());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<DesafioRespostaDTO> buscarDesafioPorId(@PathVariable Long id) {
-        Challenge desafio = challengeService.buscarDesafioPorId(id);
-        return ResponseEntity.ok(new DesafioRespostaDTO(desafio));
+        return ResponseEntity.ok(challengeService.detalharDesafio(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<DesafioRespostaDTO> atualizarDesafio(@PathVariable Long id, @RequestBody @Valid DesafioDTO dto) {
+        return ResponseEntity.ok(new DesafioRespostaDTO(challengeService.atualizarDesafio(id, dto)));
+    }
+
+    // Abre ou fecha as inscrições
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<DesafioRespostaDTO> alterarStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(new DesafioRespostaDTO(challengeService.alterarStatus(id, body.get("status"))));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> apagarDesafio(@PathVariable Long id) {
+        challengeService.apagarDesafio(id);
+        return ResponseEntity.noContent().build();
     }
 }

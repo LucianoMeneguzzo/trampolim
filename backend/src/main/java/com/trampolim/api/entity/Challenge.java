@@ -37,6 +37,9 @@ public class Challenge {
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
+    @Column(length = 20)
+    private String status; // ABERTO ou FECHADO (desafios antigos, sem valor, contam como ABERTO)
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "criador_id", nullable = false)
     @JsonIgnore
@@ -44,6 +47,7 @@ public class Challenge {
 
     public Challenge() {
         this.dataCriacao = LocalDateTime.now();
+        this.status = "ABERTO";
     }
 
     // Getters e Setters
@@ -73,6 +77,9 @@ public class Challenge {
 
     public LocalDateTime getDataCriacao() { return dataCriacao; }
     public void setDataCriacao(LocalDateTime dataCriacao) { this.dataCriacao = dataCriacao; }
+
+    public String getStatus() { return status == null ? "ABERTO" : status; }
+    public void setStatus(String status) { this.status = status; }
 
     public User getCriador() { return criador; }
     public void setCriador(User criador) { this.criador = criador; }

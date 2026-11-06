@@ -16,6 +16,10 @@ public class DesafioRespostaDTO {
     private String empresa;
     private LocalDateTime dataCriacao;
     private String nomeCriador;
+    private Long criadorId;
+    private String status;
+    private Long inscritos; // só vem no detalhe e em "meus desafios"
+    private Long entregas;  // só vem em "meus desafios"
 
     public DesafioRespostaDTO() {}
 
@@ -30,9 +34,18 @@ public class DesafioRespostaDTO {
         this.empresa = desafio.getEmpresa();
         this.dataCriacao = desafio.getDataCriacao();
 
+        this.status = desafio.getStatus();
+
         if (desafio.getCriador() != null) {
             this.nomeCriador = desafio.getCriador().getName();
+            this.criadorId = desafio.getCriador().getId();
         }
+    }
+
+    public DesafioRespostaDTO(Challenge desafio, long inscritos, Long entregas) {
+        this(desafio);
+        this.inscritos = inscritos;
+        this.entregas = entregas;
     }
 
     // Getters
@@ -46,4 +59,8 @@ public class DesafioRespostaDTO {
     public String getEmpresa() { return empresa; }
     public LocalDateTime getDataCriacao() { return dataCriacao; }
     public String getNomeCriador() { return nomeCriador; }
+    public Long getCriadorId() { return criadorId; }
+    public String getStatus() { return status; }
+    public Long getInscritos() { return inscritos; }
+    public Long getEntregas() { return entregas; }
 }

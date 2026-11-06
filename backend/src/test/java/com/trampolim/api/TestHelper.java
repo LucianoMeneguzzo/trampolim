@@ -58,6 +58,21 @@ class TestHelper {
         return login(email);
     }
 
+    // Conta nova com tudo que os testes costumam precisar
+    record Conta(String token, long id, String email) {}
+
+    Conta novaConta(String nome, String tipo) throws Exception {
+        String email = emailUnico(nome.toLowerCase());
+        cadastrar(nome, email, tipo);
+        String resposta = mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(toJson(Map.of("email", email, "password", SENHA))))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        JsonNode login = readJson(resposta);
+        return new Conta(login.get("token").asText(), login.get("userId").asLong(), email);
+    }
+
     static String bearer(String token) {
         return "Bearer " + token;
     }

@@ -86,21 +86,20 @@ class BusinessFlowIntegrationTest {
     }
 
     @Test
-    void lerDesafiosExigeLogin() throws Exception {
+    void desafiosPodemSerLidosSemLogin() throws Exception {
         String mentor = helper.novoUsuarioComToken("Marina", "MENTOR");
         long id = criarDesafio(mentor);
 
-        mvc.perform(get("/api/desafios"))
-                .andExpect(status().isUnauthorized());
-
-        mvc.perform(get("/api/desafios/" + id).header("Authorization", bearer(mentor)))
+        mvc.perform(get("/api/desafios/" + id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.nomeCriador").value("Marina"));
-        mvc.perform(get("/api/desafios").header("Authorization", bearer(mentor)))
+                .andExpect(jsonPath("$.nomeCriador").value("Marina"))
+                .andExpect(jsonPath("$.status").value("ABERTO"))
+                .andExpect(jsonPath("$.inscritos").value(0));
+        mvc.perform(get("/api/desafios"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].nomeCriador").exists());
-        mvc.perform(get("/api/desafios/999999").header("Authorization", bearer(mentor)))
+        mvc.perform(get("/api/desafios/999999"))
                 .andExpect(status().isNotFound());
     }
 
