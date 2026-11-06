@@ -18,8 +18,9 @@ cd backend
 A aplicação sobe na porta `8080` e cria automaticamente:
 - 1 mentor: `mentor@trampolim.local` / `senha-teste-123`
 - 1 aluno: `student@trampolim.local` / `senha-teste-123`
-- 2 desafios de exemplo
+- 3 desafios de exemplo
 - 1 entrega já enviada pelo aluno, pronta para avaliar em `/business/assessment/1`
+- 1 trabalho já avaliado, para o perfil público do aluno não começar vazio
 
 Sem o `.env`, a chave do JWT é sorteada a cada vez que o backend sobe: os logins caem ao reiniciar.
 
@@ -45,6 +46,7 @@ DB_PASSWORD=sua_senha
 JWT_SECRET=uma_chave_muito_segura_aqui
 JWT_EXPIRATION=86400000
 CORS_ALLOWED_ORIGINS=http://localhost:5173
+GITHUB_TOKEN=opcional
 ```
 
 3. Rode a aplicação:
@@ -130,9 +132,68 @@ E-mail ou senha errados: `401 { "erro": "E-mail ou senha inválidos." }`
 
 ---
 
+#### Meus dados (autenticado)
+```http
+GET /api/usuarios/me
+```
+
+---
+
+#### Editar o próprio perfil (autenticado)
+```http
+PUT /api/usuarios/me
+```
+
+**Corpo da requisição:**
+```json
+{
+  "name": "Ana Martins",
+  "professionalTitle": "Dev em formação",
+  "bio": "Construo APIs.",
+  "github": "github.com/ana-martins",
+  "linkedin": "linkedin.com/in/ana-martins"
+}
+```
+
+Só `name` é obrigatório. Os links precisam ser do GitHub e do LinkedIn: como viram links no perfil público, outros endereços são recusados com `400`.
+
+---
+
+#### Perfil público (público)
+```http
+GET /api/usuarios/{id}
+```
+
+Dados do perfil, sem o e-mail, e `trabalhos`: as entregas avaliadas por mentores, que formam o portfólio.
+
+---
+
+### 📊 Métricas
+
+#### Painel de métricas (público)
+```http
+GET /api/metricas
+```
+
+**Resposta de sucesso (200):**
+```json
+{
+  "desafios": 3,
+  "inscricoes": 10,
+  "enviados": 7,
+  "avaliados": 5,
+  "taxaConclusao": 50,
+  "inscricoesPorMes": [{ "mes": "2026-11", "total": 4 }]
+}
+```
+
+`inscricoesPorMes` sempre traz os últimos 6 meses.
+
+---
+
 ### 🎯 Desafios
 
-#### Listar todos os desafios (autenticado)
+#### Listar todos os desafios (público)
 ```http
 GET /api/desafios
 ```
@@ -150,19 +211,30 @@ GET /api/desafios
     "vagas": 5,
     "empresa": "TechCorp",
     "dataCriacao": "2026-10-31T09:00:00",
-    "nomeCriador": "Mentor Trampolim"
+    "nomeCriador": "Mentor Trampolim",
+    "criadorId": 1,
+    "status": "ABERTO"
   }
 ]
 ```
 
 ---
 
-#### Buscar desafio por ID (autenticado)
+#### Buscar desafio por ID (público)
 ```http
 GET /api/desafios/{id}
 ```
 
-**Resposta de sucesso (200):** Mesma estrutura do objeto acima.
+**Resposta de sucesso (200):** Mesma estrutura do objeto acima, mais `inscritos`.
+
+---
+
+#### Meus desafios (apenas MENTOR)
+```http
+GET /api/desafios/meus
+```
+
+Os desafios do mentor logado, com `inscritos` e `entregas` de cada um.
 
 ---
 
@@ -188,6 +260,33 @@ O criador é vinculado automaticamente ao mentor autenticado.
 
 ---
 
+#### Editar desafio (apenas MENTOR que publicou)
+```http
+PUT /api/desafios/{id}
+```
+
+Mesmo corpo da criação.
+
+---
+
+#### Abrir ou fechar as inscrições (apenas MENTOR que publicou)
+```http
+PATCH /api/desafios/{id}/status
+```
+
+**Corpo da requisição:** `{ "status": "FECHADO" }` (ou `ABERTO`). As inscrições e avaliações que já existem continuam valendo.
+
+---
+
+#### Apagar desafio (apenas MENTOR que publicou)
+```http
+DELETE /api/desafios/{id}
+```
+
+Responde `204`. Desafio com inscrições não pode ser apagado (`409`): feche as inscrições em vez disso.
+
+---
+
 ### 📝 Candidaturas
 
 #### Candidatar-se a um desafio (apenas STUDENT)
@@ -202,7 +301,16 @@ POST /api/candidaturas
 }
 ```
 
-⚠️ Inscrições repetidas no mesmo desafio retornam **409 Conflict**.
+⚠️ Inscrições repetidas no mesmo desafio retornam **409 Conflict**, assim como desafio sem vagas. Desafio fechado ou com o prazo vencido retorna **400**.
+
+---
+
+#### Minhas inscrições (apenas STUDENT)
+```http
+GET /api/candidaturas/minhas
+```
+
+As inscrições do aluno logado, cada uma com `avaliacao` quando já houver.
 
 ---
 
@@ -219,6 +327,8 @@ GET /api/candidaturas/{id}
   "dataCandidatura": "2026-10-31T09:05:00",
   "nomeCandidato": "Aluno Trampolim",
   "emailCandidato": "student@trampolim.local",
+  "candidatoId": 2,
+  "desafioId": 1,
   "tituloDesafio": "API REST com Spring Boot",
   "linkEnvio": null,
   "dataEnvio": null,
@@ -254,6 +364,8 @@ PUT /api/candidaturas/{id}/envio
 ```
 
 O aluno só pode enviar o projeto das suas próprias candidaturas. O status muda para `ENVIADO`. O link precisa ser de um repositório do GitHub, e candidaturas `REJEITADO` ou `AVALIADO` não aceitam novo envio.
+
+O back consulta a API do GitHub: repositório inexistente ou privado responde `400`; quando existe, `repoLinguagem` e `repoUltimoCommit` são preenchidos. Se o GitHub estiver fora do ar ou no limite de consultas, o envio é aceito sem esses dados.
 
 ---
 
@@ -326,7 +438,7 @@ cd backend
 ./mvnw test
 ```
 
-O projeto possui 17 testes automatizados cobrindo as principais regras de negócio.
+O projeto possui 40 testes automatizados cobrindo as principais regras de negócio. O relatório de cobertura fica em `target/site/jacoco/index.html`.
 
 ## 📂 Estrutura do projeto
 

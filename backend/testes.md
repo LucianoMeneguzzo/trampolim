@@ -15,10 +15,19 @@ Este guia contém todos os comandos para testar os endpoints da API.
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/auth/cadastro` | Registrar novo usuário | Público |
 | `POST` | `/api/auth/login` | Login e obter token | Público |
+| `GET` | `/api/usuarios/me` | Meus dados | Autenticado |
+| `PUT` | `/api/usuarios/me` | Editar o próprio perfil | Autenticado |
+| `GET` | `/api/usuarios/{id}` | Perfil público com o portfólio | Público |
+| `GET` | `/api/metricas` | Números do painel | Público |
 | `POST` | `/api/desafios` | Criar desafio | Apenas `MENTOR` |
-| `GET` | `/api/desafios` | Listar todos os desafios | Autenticado |
-| `GET` | `/api/desafios/{id}` | Buscar desafio por ID | Autenticado |
+| `GET` | `/api/desafios` | Listar todos os desafios | Público |
+| `GET` | `/api/desafios/{id}` | Buscar desafio por ID | Público |
+| `GET` | `/api/desafios/meus` | Desafios do mentor, com contagens | Apenas `MENTOR` |
+| `PUT` | `/api/desafios/{id}` | Editar desafio | Apenas `MENTOR` que publicou |
+| `PATCH` | `/api/desafios/{id}/status` | Abrir ou fechar inscrições | Apenas `MENTOR` que publicou |
+| `DELETE` | `/api/desafios/{id}` | Apagar desafio sem inscrições | Apenas `MENTOR` que publicou |
 | `POST` | `/api/candidaturas` | Candidatar-se | Apenas `STUDENT` |
+| `GET` | `/api/candidaturas/minhas` | Inscrições do aluno logado | Apenas `STUDENT` |
 | `GET` | `/api/candidaturas/{id}` | Buscar candidatura por ID | `MENTOR` dono do desafio ou o próprio aluno |
 | `GET` | `/api/candidaturas/desafio/{id}` | Listar candidaturas de um desafio | Apenas `MENTOR` dono do desafio |
 | `PUT` | `/api/candidaturas/{id}/envio` | Aluno envia link do projeto | Apenas `STUDENT` (dono da candidatura) |
@@ -275,7 +284,7 @@ curl -i -X PATCH http://localhost:8080/api/candidaturas/1/status -H "Content-Typ
 ### Teste I: Acesso sem token (deve retornar 401)
 
 ```bash
-curl -i -X GET http://localhost:8080/api/desafios
+curl -i -X GET http://localhost:8080/api/usuarios/me
 ```
 
 *Esperado: HTTP 401 com `{ "erro": "Faça login para continuar." }`.*

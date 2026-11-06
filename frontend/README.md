@@ -1,44 +1,51 @@
 # Trampolim — front-end
 
-Esqueleto do projeto React, com rotas prontas entre as 9 telas e o design system
-extraído do protótipo (`telas.html`) já compartilhado com o grupo.
+Aplicação React (Vite) do Trampolim, ligada à API em Spring Boot.
 
 ## Rodando localmente
+
+Com o backend no ar (veja o [README principal](../README.md)):
 
 ```
 npm install
 npm run dev
 ```
 
-## O que já está pronto
+A API é lida de `VITE_API_URL` (padrão: `http://localhost:8080`). Para outro endereço, copie `.env.example` para `.env`.
 
-- Roteamento entre as 9 telas (`src/App.jsx`)
-- Navegação lateral funcionando (`src/components/Layout.jsx`)
-- Design system compartilhado — cores, fontes, botões, topbar (`src/styles/theme.css`)
-- 3 telas já convertidas por completo, como referência de padrão: **Home**, **Login** e **Desafios**
-  (essa última mostra como transformar o filtro de busca do protótipo, que era JS puro, em estado do React)
+## Comandos
 
-## O que falta converter
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | Sobe o front em http://localhost:5173 |
+| `npm test` | Roda os testes em modo observação |
+| `npm run coverage` | Roda os testes e mede a cobertura (mínimo de 70%) |
+| `npm run lint` | Confere o padrão do código |
+| `npm run build` | Gera a versão de produção em `dist/` |
 
-Cada tela abaixo já existe como arquivo, só falta trazer o conteúdo do `telas.html`
-(ou do protótipo já enviado ao grupo) pra dentro, seguindo o padrão das 3 já prontas.
+## Rotas
 
-| Arquivo | Tela | Responsável | Linhas de referência no telas.html |
-|---|---|---|---|
-| `src/pages/DesafioDetalhe.jsx` | Detalhe do desafio | Luiz | ~861–909 |
-| `src/pages/Envio.jsx` | Envio do projeto | Andrius | ~910–951 |
-| `src/pages/CriarDesafio.jsx` | Criar desafio | **sem dono ainda — falta o Luciano definir** | ~952–987 |
-| `src/pages/Avaliar.jsx` | Avaliar envio | Rogério | ~988–1024 |
-| `src/pages/Perfil.jsx` | Perfil público | Silvia | ~1025–1055 |
-| `src/pages/Painel.jsx` | Painel de métricas | Luciano | ~1056–1092 |
+| Rota | Tela | Acesso |
+|---|---|---|
+| `/` | Home | Público |
+| `/login`, `/register` | Login e cadastro | Público |
+| `/metricas` | Painel de métricas | Público |
+| `/student/search` | Lista de desafios | Público |
+| `/student/challenge/:id` | Detalhe do desafio e inscrição | Público (inscrição exige aluno) |
+| `/student/profile/:id` | Portfólio do aluno | Público |
+| `/student/profile` | Meu perfil, com edição e inscrições | Aluno |
+| `/student/challenge/:id/send-challenge` | Envio do projeto | Aluno |
+| `/business/profile` | Meu perfil, desafios e inscrições | Mentor |
+| `/business/post-challenge` | Publicar desafio | Mentor |
+| `/business/challenge/:id/edit` | Editar desafio | Mentor |
+| `/business/assessment/:id` | Avaliar entrega | Mentor |
 
-Estilos específicos de cada tela (ex: `.challenge-card`, `.field`, `.score-control`)
-não estão no `theme.css` de propósito — só o que é reaproveitado em todas as telas
-está lá (cores, botões, navegação, topbar). Ao converter sua tela, copie o CSS
-correspondente do `telas.html` original pra dentro do seu componente.
+## Organização
 
-## Pendente, não esquecer
+- `src/pages`: uma pasta por tela, com o `.jsx`, o `.css` e o teste.
+- `src/components`: partes reaproveitadas, como `ProtectedRoute` e as barras do topo.
+- `src/services`: toda chamada à API. `api.js` anexa o token e padroniza os erros.
+- `src/utils`: formatação de datas, tecnologias e links.
+- `src/styles/theme.css`: cores, botões e estruturas comuns.
 
-- Configurar Jest (já é card separado no Trello, de Pelegrino/Luiz)
-- Trocar os dados de exemplo de `Desafios.jsx` pela chamada real em `GET /api/desafios`
-  assim que a API estiver de pé
+O CSS do Vite é global: uma classe criada numa tela vale em todas. Por isso as telas novas usam um prefixo próprio (`detalhe-`, `painel-`, `area-`).
