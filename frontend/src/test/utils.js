@@ -21,6 +21,17 @@ export function respostaJson(status, corpo) {
   })
 }
 
+// Responde por rota: mockApi({ 'GET /api/desafios': [200, [...]] }). Rota fora da lista responde 404.
+export function mockApi(rotas) {
+  const fn = vi.fn((url, opcoes = {}) => {
+    const chave = `${opcoes.method ?? 'GET'} ${new URL(url).pathname}`
+    const [status, corpo] = rotas[chave] ?? [404, { erro: `Rota não mapeada no teste: ${chave}` }]
+    return respostaJson(status, corpo)
+  })
+  vi.stubGlobal('fetch', fn)
+  return fn
+}
+
 export function mockFetch(...respostas) {
   const fn = vi.fn()
   respostas.forEach(([status, corpo]) => fn.mockImplementationOnce(() => respostaJson(status, corpo)))

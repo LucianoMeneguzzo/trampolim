@@ -1,6 +1,6 @@
 // IMPORTAÇÕES
 import { useState } from 'react'
-import { Navigate, useNavigate } from 'react-router'
+import { Navigate, useLocation, useNavigate } from 'react-router'
 import Logo from '../../components/Logo/Logo'
 import { getUser } from '../../services/api'
 import { cadastrar, entrar, destinoInicial, mensagemDeErro } from '../../services/auth'
@@ -8,6 +8,8 @@ import './Cadastro.css'
 
 export default function Cadastro() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const voltarPara = location.state?.from
   const [perfil, setPerfil] = useState('Aluno');
   const [form, setForm] = useState({
     name: '',
@@ -42,7 +44,7 @@ export default function Cadastro() {
     // 2) entra automaticamente (POST /api/auth/login guarda o token) e leva para a área do perfil
     try {
       const dados = await entrar({ email, senha: form.password })
-      navigate(destinoInicial(dados.type), { replace: true })
+      navigate(voltarPara ?? destinoInicial(dados.type), { replace: true })
     } catch {
       navigate('/login') // conta criada, mas o login automático falhou: a pessoa entra na mão
     }
@@ -121,7 +123,7 @@ export default function Cadastro() {
           </button>
 
           <p className="form-footnote">
-            Já participa?{' '}<button type="button" className="text-button" onClick={() => navigate('/login')}>Entrar na minha conta</button>
+            Já participa?{' '}<button type="button" className="text-button" onClick={() => navigate('/login', { state: location.state })}>Entrar na minha conta</button>
           </p>
         </form>
       </div>

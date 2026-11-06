@@ -1,41 +1,43 @@
 // Responsável: Luiz
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import ContaTopbar from '../../components/ContaTopbar/ContaTopbar';
+import { listarDesafios } from '../../services/desafios';
+import { LABEL_NIVEL, listaDeTecnologias } from '../../utils/desafios';
 import './Desafio.css';
 
-const FILTROS_NIVEL = ['Todos', 'iniciante', 'intermediario', 'avancado'];
-
-const LABEL_NIVEL = {
-  iniciante: 'Iniciante',
-  intermediario: 'Intermediário',
-  avancado: 'Avançado',
-};
-
-// --- DADOS FALSOS EXPANDIDOS (Para simular um banco de dados real) ---
-const DESAFIOS_FALSOS = [
-  { id: 1, titulo: 'Criar uma API REST', descricao: 'Desenvolva uma API usando Node.js e Express com autenticação JWT.', nivel: 'intermediario', nomeCriador: 'Tech Solutions' },
-  { id: 2, titulo: 'Landing Page Responsiva', descricao: 'Crie uma página de vendas usando HTML, CSS e animações suaves.', nivel: 'iniciante', nomeCriador: 'Agência Web' },
-  { id: 3, titulo: 'Sistema de Autenticação', descricao: 'Implemente login com JWT, rotas protegidas e React Context.', nivel: 'avancado', nomeCriador: 'Startup X' },
-  { id: 4, titulo: 'Dashboard Analítico', descricao: 'Construa um painel de dados com gráficos interativos usando Chart.js.', nivel: 'intermediario', nomeCriador: 'DataCorp' },
-  { id: 5, titulo: 'App de Clima', descricao: 'Consuma uma API externa para exibir a previsão do tempo em tempo real.', nivel: 'iniciante', nomeCriador: 'WebMasters' },
-  { id: 6, titulo: 'E-commerce Completo', descricao: 'Desenvolva o frontend de uma loja virtual com carrinho e checkout.', nivel: 'avancado', nomeCriador: 'ShopDev' },
-  { id: 7, titulo: 'Clone do Spotify', descricao: 'Recrie a interface de um player de música com controle de áudio.', nivel: 'intermediario', nomeCriador: 'MusicTech' },
-  { id: 8, titulo: 'Calculadora Científica', descricao: 'Crie uma calculadora funcional com operações matemáticas complexas.', nivel: 'iniciante', nomeCriador: 'CodeLab' },
-  { id: 9, titulo: 'Microserviço de Pagamentos', descricao: 'Integre um gateway de pagamento usando Node.js e Webhooks.', nivel: 'avancado', nomeCriador: 'FinTech BR' }
-];
-// ---------------------------------------------------------------------
+const FILTROS_NIVEL = ['Todos', 'INICIANTE', 'INTERMEDIARIO', 'AVANCADO'];
 
 export default function Desafio() {
   const navigate = useNavigate();
 
   const [busca, setBusca] = useState('');
   const [nivelAtivo, setNivelAtivo] = useState('Todos');
-  
-  const desafios = DESAFIOS_FALSOS; 
+  const [desafios, setDesafios] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState('');
+
+  useEffect(() => {
+    let ativo = true;
+
+    listarDesafios()
+      .then((lista) => {
+        // Desafio fechado não recebe inscrição, então não aparece para quem está procurando
+        if (ativo) setDesafios(lista.filter((d) => d.status !== 'FECHADO'));
+      })
+      .catch(() => {
+        if (ativo) setErro('Não consegui carregar os desafios. Confira se o back-end está rodando.');
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => { ativo = false; };
+  }, []);
 
   const visiveis = desafios.filter((d) => {
-    const matchBusca = `${d.titulo} ${d.descricao || ''} ${d.nivel} ${d.nomeCriador || ''}`
+    const matchBusca = `${d.titulo} ${d.descricao || ''} ${d.tecnologias || ''} ${LABEL_NIVEL[d.nivel] || d.nivel} ${d.empresa || ''} ${d.nomeCriador || ''}`
       .toLowerCase()
       .includes(busca.toLowerCase().trim());
 
@@ -58,14 +60,15 @@ export default function Desafio() {
           TRAMPOLIM / <b>DESAFIOS</b>
         </div>
         <div className="top-actions">
-          <div className="avatar">AM</div>
+          <button type="button" className="plain-link" onClick={() => navigate('/metricas')}>Métricas</button>
+          <ContaTopbar />
         </div>
       </header>
 
       <div className="page-header">
         <div>
           <h1>Encontre seu próximo desafio</h1>
-          <p>Desafios reais propostos por mentores. Filtre por nível ou criador.</p>
+          <p>Desafios reais propostos por mentores. Filtre por nível ou busque por tecnologia.</p>
         </div>
       </div>
 
@@ -76,7 +79,7 @@ export default function Desafio() {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             type="search"
-            placeholder="Busque por título, descrição ou criador"
+            placeholder="Busque por título, tecnologia ou empresa"
           />
         </label>
       </div>
@@ -104,42 +107,54 @@ export default function Desafio() {
       </div>
 
       <div className="challenge-grid">
-        {visiveis.map((d) => (
-          <article
-            key={d.id}
-            className="challenge-card"
-            onClick={() => navigate(`/student/challenge/${d.id}`)}
-          >
-            <div className={`card-stripe nivel-${d.nivel}`} />
+        {visiveis.map((d) => {
+          const autor = d.empresa || d.nomeCriador;
 
-            {d.nomeCriador && (
-              <div className="card-empresa">
-                <span className="empresa-logo">
-                  {d.nomeCriador.charAt(0).toUpperCase()}
-                </span>
-                <span className="empresa-nome">{d.nomeCriador}</span>
+          return (
+            <article
+              key={d.id}
+              className="challenge-card"
+              onClick={() => navigate(`/student/challenge/${d.id}`)}
+            >
+              <div className={`card-stripe nivel-${d.nivel.toLowerCase()}`} />
+
+              {autor && (
+                <div className="card-empresa">
+                  <span className="empresa-logo">
+                    {autor.charAt(0).toUpperCase()}
+                  </span>
+                  <span className="empresa-nome">{autor}</span>
+                </div>
+              )}
+
+              <h3>{d.titulo}</h3>
+
+              {d.descricao && (
+                <p className="card-descricao">{d.descricao}</p>
+              )}
+
+              <div className="card-meta">
+                <span>📊 {LABEL_NIVEL[d.nivel] || d.nivel}</span>
+                {listaDeTecnologias(d.tecnologias).length > 0 && (
+                  <span>🧰 {listaDeTecnologias(d.tecnologias).join(' · ')}</span>
+                )}
               </div>
-            )}
 
-            <h3>{d.titulo}</h3>
-
-            {d.descricao && (
-              <p className="card-descricao">{d.descricao}</p>
-            )}
-
-            <div className="card-meta">
-              <span>📊 {LABEL_NIVEL[d.nivel] || d.nivel}</span>
-              {d.nomeCriador && <span>🏢 {d.nomeCriador}</span>}
-            </div>
-
-            <button className="card-cta">Ver desafio →</button>
-          </article>
-        ))}
+              <button type="button" className="card-cta">Ver desafio →</button>
+            </article>
+          );
+        })}
       </div>
 
-      {visiveis.length === 0 && (
+      {carregando && <div className="desafios-loading">Carregando desafios…</div>}
+
+      {erro && <div className="empty-state" role="alert">{erro}</div>}
+
+      {!carregando && !erro && visiveis.length === 0 && (
         <div className="empty-state">
-          Nenhum desafio com esses filtros. Tente remover algum filtro.
+          {desafios.length === 0
+            ? 'Ainda não há desafios abertos. Volte em breve.'
+            : 'Nenhum desafio com esses filtros. Tente remover algum filtro.'}
         </div>
       )}
     </div>
