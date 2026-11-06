@@ -18,6 +18,7 @@ target/
 node_modules/
 dist/
 build/
+coverage/
 .env
 .env.local
 npm-debug.log*
