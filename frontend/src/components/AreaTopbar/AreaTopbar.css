@@ -1,0 +1,105 @@
+/* Base das telas logadas em papel claro (área do mentor).
+   Classes com prefixo "area-" de propósito: Desafio.css define .surface-paper, .topbar
+   e .page-header com !important (tema escuro) e, como o CSS do Vite é global, usar
+   esses nomes aqui deixaria estas telas escuras. */
+.area-page {
+  min-height: 100vh;
+  color: var(--paper-ink);
+  background: var(--paper);
+  font-family: var(--body);
+}
+
+.area-topbar {
+  min-height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 17px clamp(24px, 4vw, 56px);
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.area-crumb { color: #787a7f; font-family: var(--mono); font-size: 11px; }
+.area-crumb b { color: var(--paper-ink); font-weight: 500; }
+
+.area-actions { display: flex; align-items: center; gap: 10px; }
+
+.area-link { padding: 7px; border: 0; color: #63666d; background: transparent; font-size: 12px; }
+.area-link:hover { color: var(--paper-ink); }
+
+.area-avatar {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  border: 1px solid var(--paper-line);
+  border-radius: 50%;
+  color: var(--paper-ink);
+  background: #e5e1d6;
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.area-pad { padding: 46px clamp(24px, 4vw, 56px) 64px; }
+
+.area-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
+.area-header h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(29px, 3.3vw, 43px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.052em;
+}
+.area-header p { max-width: 530px; margin: 10px 0 0; color: #676a70; font-size: 14px; line-height: 1.65; }
+
+.area-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 6px 8px;
+  border: 1px solid #efcb91;
+  border-radius: 999px;
+  color: #8a5814;
+  background: var(--amber-soft);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.area-chip.sage { color: #365d50; border-color: #b9d2c7; background: var(--sage-soft); }
+
+.area-alert {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  color: #8f3d31;
+  background: #f5e1dd;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.field-error { color: #a1432f; font-size: 11px; }
+
+.area-empty {
+  padding: 32px;
+  border: 1px dashed #c7c2b7;
+  border-radius: 10px;
+  color: #74767d;
+  font-size: 13px;
+  text-align: center;
+}
+.area-empty h2 { margin: 0 0 8px; color: var(--paper-ink); font-family: var(--display); font-size: 20px; letter-spacing: -.03em; }
+.area-empty p { margin: 0 0 16px; }
+
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+@media (max-width: 900px) {
+  .area-header { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 560px) {
+  .area-topbar { min-height: 63px; padding: 13px 19px; }
+  .area-pad { padding: 31px 19px 45px; }
+}

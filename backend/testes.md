@@ -13,16 +13,16 @@ Este guia contém todos os comandos para testar os endpoints da API.
 
 | Método | Rota | Descrição | Permissão |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/usuarios` | Registrar novo usuário | Público |
+| `POST` | `/api/auth/cadastro` | Registrar novo usuário | Público |
 | `POST` | `/api/auth/login` | Login e obter token | Público |
 | `POST` | `/api/desafios` | Criar desafio | Apenas `MENTOR` |
 | `GET` | `/api/desafios` | Listar todos os desafios | Autenticado |
 | `GET` | `/api/desafios/{id}` | Buscar desafio por ID | Autenticado |
 | `POST` | `/api/candidaturas` | Candidatar-se | Apenas `STUDENT` |
-| `GET` | `/api/candidaturas/{id}` | Buscar candidatura por ID | Autenticado |
-| `GET` | `/api/candidaturas/desafio/{id}` | Listar candidaturas de um desafio | Autenticado |
+| `GET` | `/api/candidaturas/{id}` | Buscar candidatura por ID | `MENTOR` dono do desafio ou o próprio aluno |
+| `GET` | `/api/candidaturas/desafio/{id}` | Listar candidaturas de um desafio | Apenas `MENTOR` dono do desafio |
 | `PUT` | `/api/candidaturas/{id}/envio` | Aluno envia link do projeto | Apenas `STUDENT` (dono da candidatura) |
-| `PATCH` | `/api/candidaturas/{id}/status` | Aprovar ou rejeitar candidatura | Apenas `MENTOR` |
+| `PATCH` | `/api/candidaturas/{id}/status` | Aprovar ou rejeitar candidatura | Apenas `MENTOR` dono do desafio |
 | `POST` | `/api/candidaturas/{id}/avaliacao` | Mentor avalia a entrega | Apenas `MENTOR` (criador do desafio) |
 
 ---
@@ -98,7 +98,7 @@ Substitua `TOKEN_STUDENT` pelo token do aluno.
 curl -i -X POST http://localhost:8080/api/candidaturas -H "Content-Type: application/json" -H "Authorization: Bearer TOKEN_STUDENT" -d '{"desafioId": 2}'
 ```
 
-*Esperado: HTTP 201 Created com `status: "PENDENTE"`. Use o desafio 2, pois o aluno de exemplo já está inscrito no desafio 1.*
+*Esperado: HTTP 201 Created com `status: "PENDENTE"`. Use o desafio 2, pois o aluno de exemplo já está inscrito no desafio 1 (com o projeto já enviado).*
 
 ---
 
@@ -122,7 +122,7 @@ curl -i -X GET http://localhost:8080/api/candidaturas/1 -H "Authorization: Beare
 curl -i -X PATCH http://localhost:8080/api/candidaturas/1/status -H "Content-Type: application/json" -H "Authorization: Bearer TOKEN_MENTOR" -d '{"status": "APROVADO"}'
 ```
 
-**Rejeitar candidatura (teste alternativo):**
+**Rejeitar candidatura (teste alternativo — candidatura rejeitada não aceita mais envio, então use esta só depois do Passo 6 ou em outra candidatura):**
 
 ```bash
 curl -i -X PATCH http://localhost:8080/api/candidaturas/1/status -H "Content-Type: application/json" -H "Authorization: Bearer TOKEN_MENTOR" -d '{"status": "REJEITADO"}'
@@ -166,9 +166,9 @@ curl -i -X POST http://localhost:8080/api/candidaturas/1/avaliacao -H "Content-T
 
 ## 🧪 PASSO 7: Testes de Erro e Segurança
 
-### Teste A: Candidatura duplicada
+### Teste A: Candidatura duplicada (deve retornar 409 Conflict)
 
-Rode o comando abaixo duas vezes seguidas com o mesmo `desafioId`. A segunda deve ser rejeitada:
+O aluno de exemplo já está inscrito no desafio 1, então o comando abaixo deve ser rejeitado:
 
 ```bash
 curl -i -X POST http://localhost:8080/api/candidaturas -H "Content-Type: application/json" -H "Authorization: Bearer TOKEN_STUDENT" -d '{"desafioId": 1}'
@@ -194,10 +194,7 @@ curl -i -X POST http://localhost:8080/api/candidaturas/1/avaliacao -H "Content-T
 
 ```json
 {
-  "timestamp": "2026-10-31T12:50:08.956+00:00",
-  "status": 403,
-  "error": "Forbidden",
-  "path": "/api/candidaturas/1/avaliacao"
+  "erro": "Seu perfil não tem permissão para esta ação."
 }
 ```
 
@@ -245,7 +242,7 @@ curl -i -X POST http://localhost:8080/api/candidaturas/1/avaliacao -H "Content-T
 }
 ```
 
-### Teste G: Avaliação duplicada
+### Teste G: Avaliação duplicada (deve retornar 409 Conflict)
 
 Tente avaliar a mesma candidatura duas vezes com o `TOKEN_MENTOR`:
 
@@ -275,13 +272,13 @@ curl -i -X PATCH http://localhost:8080/api/candidaturas/1/status -H "Content-Typ
 }
 ```
 
-### Teste I: Acesso sem token (deve retornar 403)
+### Teste I: Acesso sem token (deve retornar 401)
 
 ```bash
 curl -i -X GET http://localhost:8080/api/desafios
 ```
 
-*Esperado: HTTP 403 Forbidden.*
+*Esperado: HTTP 401 com `{ "erro": "Faça login para continuar." }`.*
 
 ---
 

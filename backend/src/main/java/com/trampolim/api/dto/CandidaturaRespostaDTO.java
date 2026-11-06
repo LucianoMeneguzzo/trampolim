@@ -1,5 +1,6 @@
 package com.trampolim.api.dto;
 
+import com.trampolim.api.entity.Avaliacao;
 import com.trampolim.api.entity.Candidatura;
 import java.time.LocalDateTime;
 
@@ -13,6 +14,9 @@ public class CandidaturaRespostaDTO {
     private String tituloDesafio;
     private String linkEnvio;
     private LocalDateTime dataEnvio;
+    private String repoLinguagem;
+    private LocalDateTime repoUltimoCommit;
+    private AvaliacaoRespostaDTO avaliacao; // só vem preenchida em GET /api/candidaturas/{id}, depois da avaliação
 
     public CandidaturaRespostaDTO() {}
 
@@ -22,6 +26,8 @@ public class CandidaturaRespostaDTO {
         this.dataCandidatura = candidatura.getDataCandidatura();
         this.linkEnvio = candidatura.getLinkEnvio();
         this.dataEnvio = candidatura.getDataEnvio();
+        this.repoLinguagem = candidatura.getRepoLinguagem();
+        this.repoUltimoCommit = candidatura.getRepoUltimoCommit();
 
         if (candidatura.getCandidato() != null) {
             this.nomeCandidato = candidatura.getCandidato().getName();
@@ -38,6 +44,12 @@ public class CandidaturaRespostaDTO {
         }
     }
 
+    // Tudo que a tela "Avalie a entrega" (/business/assessment/:id) precisa numa só chamada
+    public CandidaturaRespostaDTO(Candidatura candidatura, Avaliacao avaliacao) {
+        this(candidatura);
+        this.avaliacao = avaliacao != null ? new AvaliacaoRespostaDTO(avaliacao) : null;
+    }
+
     // Getters
     public Long getId() { return id; }
     public String getStatus() { return status; }
@@ -47,4 +59,7 @@ public class CandidaturaRespostaDTO {
     public String getTituloDesafio() { return tituloDesafio; }
     public String getLinkEnvio() { return linkEnvio; }
     public LocalDateTime getDataEnvio() { return dataEnvio; }
+    public String getRepoLinguagem() { return repoLinguagem; }
+    public LocalDateTime getRepoUltimoCommit() { return repoUltimoCommit; }
+    public AvaliacaoRespostaDTO getAvaliacao() { return avaliacao; }
 }

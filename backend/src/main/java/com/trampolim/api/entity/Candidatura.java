@@ -23,7 +23,7 @@ public class Candidatura {
     private Challenge desafio;
 
     @Column(nullable = false)
-    private String status; // PENDENTE, APROVADO, REJEITADO, ENVIADO
+    private String status; // PENDENTE, APROVADO, REJEITADO, ENVIADO, AVALIADO
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCandidatura;
@@ -33,6 +33,13 @@ public class Candidatura {
     private String linkEnvio;
 
     private LocalDateTime dataEnvio;
+
+    // Vêm da API do GitHub na hora do envio (integração ainda a fazer)
+    @Column(name = "repo_ultimo_commit")
+    private LocalDateTime repoUltimoCommit;
+
+    @Column(name = "repo_linguagem", length = 60)
+    private String repoLinguagem;
 
     public Candidatura() {
         this.status = "PENDENTE";
@@ -60,4 +67,10 @@ public class Candidatura {
 
     public LocalDateTime getDataEnvio() { return dataEnvio; }
     public void setDataEnvio(LocalDateTime dataEnvio) { this.dataEnvio = dataEnvio; }
+
+    public LocalDateTime getRepoUltimoCommit() { return repoUltimoCommit; }
+    public void setRepoUltimoCommit(LocalDateTime repoUltimoCommit) { this.repoUltimoCommit = repoUltimoCommit; }
+
+    public String getRepoLinguagem() { return repoLinguagem; }
+    public void setRepoLinguagem(String repoLinguagem) { this.repoLinguagem = repoLinguagem; }
 }

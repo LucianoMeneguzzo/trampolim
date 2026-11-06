@@ -19,7 +19,9 @@ A aplicação sobe na porta `8080` e cria automaticamente:
 - 1 mentor: `mentor@trampolim.local` / `senha-teste-123`
 - 1 aluno: `student@trampolim.local` / `senha-teste-123`
 - 2 desafios de exemplo
-- 1 candidatura de exemplo
+- 1 entrega já enviada pelo aluno, pronta para avaliar em `/business/assessment/1`
+
+Sem o `.env`, a chave do JWT é sorteada a cada vez que o backend sobe: os logins caem ao reiniciar.
 
 O console do H2 fica disponível em: http://localhost:8080/h2-console
 - JDBC URL: `jdbc:h2:mem:trampolimdb`
@@ -42,6 +44,7 @@ DB_USERNAME=postgres
 DB_PASSWORD=sua_senha
 JWT_SECRET=uma_chave_muito_segura_aqui
 JWT_EXPIRATION=86400000
+CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
 3. Rode a aplicação:
@@ -62,13 +65,20 @@ Authorization: Bearer SEU_TOKEN_AQUI
 
 Para obter o token, use a rota `POST /api/auth/login`.
 
+| Situação | Resposta |
+|---|---|
+| Sem token, token inválido ou expirado em rota protegida | `401 { "erro": "Faça login para continuar." }` |
+| Logado, mas com o perfil errado (ex.: aluno criando desafio) | `403 { "erro": "Seu perfil não tem permissão para esta ação." }` |
+
+O front em `http://localhost:5173` já pode chamar a API. Para liberar outros endereços, use a variável `CORS_ALLOWED_ORIGINS`.
+
 ## 📋 Rotas da API
 
 ### 👤 Usuários e Autenticação
 
 #### Registrar novo usuário (público)
 ```http
-POST /api/usuarios
+POST /api/auth/cadastro
 ```
 
 **Corpo da requisição:**
@@ -76,7 +86,7 @@ POST /api/usuarios
 {
   "name": "Nome do Usuário",
   "email": "usuario@exemplo.com",
-  "password": "senha123",
+  "password": "senha-com-8-ou-mais",
   "type": "MENTOR",
   "bio": "Sua bio",
   "professionalTitle": "Seu cargo",
@@ -85,7 +95,11 @@ POST /api/usuarios
 }
 ```
 
-O campo `type` aceita apenas: `MENTOR` ou `STUDENT`.
+O campo `type` aceita apenas: `MENTOR` ou `STUDENT`. A senha precisa ter de 8 a 72 caracteres e o e-mail é salvo em minúsculas.
+
+- `201` com o usuário criado (sem a senha)
+- `400` campo inválido, ex.: `{ "password": "A senha precisa ter entre 8 e 72 caracteres" }`
+- `409` `{ "erro": "Este e-mail já está cadastrado." }`
 
 ---
 
@@ -111,6 +125,8 @@ POST /api/auth/login
   "token": "eyJhbGciOiJIUzUxMiJ9..."
 }
 ```
+
+E-mail ou senha errados: `401 { "erro": "E-mail ou senha inválidos." }`
 
 ---
 
@@ -190,7 +206,7 @@ POST /api/candidaturas
 
 ---
 
-#### Buscar candidatura por ID (autenticado)
+#### Buscar candidatura por ID (mentor dono do desafio ou o próprio aluno)
 ```http
 GET /api/candidaturas/{id}
 ```
@@ -205,13 +221,18 @@ GET /api/candidaturas/{id}
   "emailCandidato": "student@trampolim.local",
   "tituloDesafio": "API REST com Spring Boot",
   "linkEnvio": null,
-  "dataEnvio": null
+  "dataEnvio": null,
+  "repoLinguagem": null,
+  "repoUltimoCommit": null,
+  "avaliacao": null
 }
 ```
 
+Depois de avaliada, `avaliacao` traz a nota e o feedback, no mesmo formato da resposta de `POST /api/candidaturas/{id}/avaliacao`. É esta rota que alimenta a tela `/business/assessment/:id`.
+
 ---
 
-#### Listar candidaturas de um desafio (autenticado)
+#### Listar candidaturas de um desafio (apenas MENTOR dono do desafio)
 ```http
 GET /api/candidaturas/desafio/{desafioId}
 ```
@@ -232,11 +253,11 @@ PUT /api/candidaturas/{id}/envio
 }
 ```
 
-O aluno só pode enviar o projeto das suas próprias candidaturas. O status muda para `ENVIADO`.
+O aluno só pode enviar o projeto das suas próprias candidaturas. O status muda para `ENVIADO`. O link precisa ser de um repositório do GitHub, e candidaturas `REJEITADO` ou `AVALIADO` não aceitam novo envio.
 
 ---
 
-#### Aprovar ou rejeitar candidatura (apenas MENTOR)
+#### Aprovar ou rejeitar candidatura (apenas MENTOR dono do desafio)
 ```http
 PATCH /api/candidaturas/{id}/status
 ```
@@ -265,7 +286,7 @@ POST /api/candidaturas/{id}/avaliacao
 }
 ```
 
-Apenas o mentor que **criou o desafio** pode avaliar a candidatura. A nota deve ser entre 0 e 10.
+Apenas o mentor que **criou o desafio** pode avaliar a candidatura. A nota deve ser um número inteiro entre 0 e 10. A candidatura precisa ter projeto enviado (senão `400`) e só pode ser avaliada uma vez (senão `409`).
 
 **Resposta de sucesso (201):**
 ```json
@@ -284,6 +305,20 @@ Apenas o mentor que **criou o desafio** pode avaliar a candidatura. A nota deve 
 
 ---
 
+## ⚠️ Formato dos erros
+
+Validação de campos (`400`):
+
+```json
+{ "desafioId": "O ID do desafio é obrigatório" }
+```
+
+Demais erros (`400`, `401`, `403`, `404`, `409`, `500`):
+
+```json
+{ "erro": "Mensagem explicando o problema" }
+```
+
 ## 🧪 Executando testes
 
 ```bash
@@ -291,7 +326,7 @@ cd backend
 ./mvnw test
 ```
 
-O projeto possui 16 testes automatizados cobrindo as principais regras de negócio.
+O projeto possui 17 testes automatizados cobrindo as principais regras de negócio.
 
 ## 📂 Estrutura do projeto
 

@@ -2,6 +2,7 @@ package com.trampolim.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuarios")
@@ -37,6 +38,14 @@ public class User {
     @Column(name = "titulo_profissional", length = 100)
     private String professionalTitle;
 
+    @Column(name = "criado_em", updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    void prePersist() {
+        if (createdAt == null) createdAt = LocalDateTime.now();
+    }
+
     // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -64,4 +73,7 @@ public class User {
 
     public String getProfessionalTitle() { return professionalTitle; }
     public void setProfessionalTitle(String professionalTitle) { this.professionalTitle = professionalTitle; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

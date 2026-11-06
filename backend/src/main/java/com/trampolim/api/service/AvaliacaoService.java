@@ -4,11 +4,9 @@ import com.trampolim.api.dto.AvaliacaoDTO;
 import com.trampolim.api.entity.Avaliacao;
 import com.trampolim.api.entity.Candidatura;
 import com.trampolim.api.entity.User;
+import com.trampolim.api.exception.ApiException;
 import com.trampolim.api.repository.AvaliacaoRepository;
 import com.trampolim.api.repository.CandidaturaRepository;
-import com.trampolim.api.repository.UserRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,44 +18,43 @@ public class AvaliacaoService {
 
     private final AvaliacaoRepository avaliacaoRepository;
     private final CandidaturaRepository candidaturaRepository;
-    private final UserRepository userRepository;
+    private final CandidaturaService candidaturaService;
+    private final UserService userService;
 
-    public AvaliacaoService(AvaliacaoRepository avaliacaoRepository, CandidaturaRepository candidaturaRepository, UserRepository userRepository) {
+    public AvaliacaoService(AvaliacaoRepository avaliacaoRepository, CandidaturaRepository candidaturaRepository,
+                            CandidaturaService candidaturaService, UserService userService) {
         this.avaliacaoRepository = avaliacaoRepository;
         this.candidaturaRepository = candidaturaRepository;
-        this.userRepository = userRepository;
+        this.candidaturaService = candidaturaService;
+        this.userService = userService;
     }
 
+    // Regras: 1) só o mentor dono do desafio avalia; 2) precisa ter projeto enviado; 3) uma avaliação por entrega
     public Avaliacao avaliarCandidatura(Long candidaturaId, AvaliacaoDTO dto) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        User mentorLogado = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário autenticado não encontrado."));
+        Candidatura candidatura = candidaturaService.buscarComDetalhes(candidaturaId);
+        User mentorLogado = userService.getAuthenticatedUser();
 
-        Candidatura candidatura = candidaturaRepository.findByIdWithDetails(candidaturaId)
-                .orElseThrow(() -> new RuntimeException("Candidatura não encontrada."));
+        CandidaturaService.exigirDonoDoDesafio(candidatura.getDesafio(), mentorLogado);
 
-        // Regra de negócio: Apenas o mentor que publicou o desafio pode avaliar
-        if (!candidatura.getDesafio().getCriador().getEmail().equals(mentorLogado.getEmail())) {
-            throw new RuntimeException("Apenas o mentor criador do desafio pode avaliar esta candidatura.");
+        if (candidatura.getLinkEnvio() == null) {
+            throw ApiException.badRequest("Esta inscrição ainda não tem projeto enviado.");
         }
-
-        // Verifica se já foi avaliada
         if (avaliacaoRepository.findByCandidatura(candidatura).isPresent()) {
-            throw new RuntimeException("Esta candidatura já foi avaliada.");
+            throw ApiException.conflict("Esta candidatura já foi avaliada.");
         }
 
         Avaliacao avaliacao = new Avaliacao();
         avaliacao.setCandidatura(candidatura);
         avaliacao.setMentor(mentorLogado);
         avaliacao.setNota(dto.getNota());
-        avaliacao.setFeedback(dto.getFeedback());
+        avaliacao.setFeedback(dto.getFeedback().trim());
         avaliacao.setDataAvaliacao(LocalDateTime.now());
 
         // Atualiza o status da candidatura para refletir que foi avaliada
         candidatura.setStatus("AVALIADO");
         candidaturaRepository.save(candidatura);
 
+        // TODO (Ismael): disparar o e-mail avisando o aluno
         return avaliacaoRepository.save(avaliacao);
     }
 }

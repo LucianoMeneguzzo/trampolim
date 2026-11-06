@@ -4,17 +4,22 @@ import com.trampolim.api.entity.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class UserRegistrationDTO {
 
     @NotBlank(message = "O nome é obrigatório")
+    @Size(max = 100, message = "O nome pode ter no máximo 100 caracteres")
     private String name;
 
     @NotBlank(message = "O e-mail é obrigatório")
     @Email(message = "O e-mail deve ser válido")
+    @Size(max = 150, message = "O e-mail pode ter no máximo 150 caracteres")
     private String email;
 
+    // BCrypt só considera os primeiros 72 bytes, por isso o limite superior
     @NotBlank(message = "A senha é obrigatória")
+    @Size(min = 8, max = 72, message = "A senha precisa ter entre 8 e 72 caracteres")
     private String password;
 
     @NotNull(message = "O tipo de usuário é obrigatório")

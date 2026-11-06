@@ -2,21 +2,27 @@ package com.trampolim.api.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
 public class DesafioDTO {
 
     @NotBlank(message = "O título é obrigatório")
+    @Size(max = 255, message = "O título pode ter no máximo 255 caracteres")
     private String titulo;
 
     @NotBlank(message = "A descrição é obrigatória")
+    @Size(max = 2000, message = "A descrição pode ter no máximo 2000 caracteres")
     private String descricao;
 
     @NotBlank(message = "As tecnologias são obrigatórias")
+    @Size(max = 255, message = "As tecnologias podem ter no máximo 255 caracteres")
     private String tecnologias;
 
     @NotBlank(message = "O nível é obrigatório")
+    @Pattern(regexp = "(?i)INICIANTE|INTERMEDIARIO|AVANCADO", message = "O nível deve ser INICIANTE, INTERMEDIARIO ou AVANCADO")
     private String nivel;
 
     @NotNull(message = "O prazo é obrigatório")
@@ -27,6 +33,7 @@ public class DesafioDTO {
     private Integer vagas;
 
     @NotBlank(message = "O nome da empresa é obrigatório")
+    @Size(max = 255, message = "O nome da empresa pode ter no máximo 255 caracteres")
     private String empresa;
 
     // Getters e Setters

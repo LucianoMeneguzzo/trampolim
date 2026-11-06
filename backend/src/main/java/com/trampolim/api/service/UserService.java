@@ -2,7 +2,10 @@ package com.trampolim.api.service;
 
 import com.trampolim.api.dto.UserRegistrationDTO;
 import com.trampolim.api.entity.User;
+import com.trampolim.api.exception.ApiException;
 import com.trampolim.api.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,14 +21,16 @@ public class UserService {
     }
 
     public User registerUser(UserRegistrationDTO dto) {
-        if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Este e-mail já está cadastrado.");
+        String email = dto.getEmail().trim().toLowerCase();
+
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            throw ApiException.conflict("Este e-mail já está cadastrado.");
         }
 
         User newUser = new User();
-        newUser.setName(dto.getName());
-        newUser.setEmail(dto.getEmail());
-        newUser.setPassword(passwordEncoder.encode(dto.getPassword()));
+        newUser.setName(dto.getName().trim());
+        newUser.setEmail(email);
+        newUser.setPassword(passwordEncoder.encode(dto.getPassword())); // grava só o hash BCrypt
         newUser.setType(dto.getType());
 
         newUser.setBio(dto.getBio());
@@ -34,5 +39,15 @@ public class UserService {
         newUser.setProfessionalTitle(dto.getProfessionalTitle());
 
         return userRepository.save(newUser);
+    }
+
+    // Usuário dono do token JWT da requisição atual (o filtro JWT já preencheu o SecurityContext)
+    public User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw ApiException.unauthorized("Faça login para continuar.");
+        }
+        return userRepository.findByEmailIgnoreCase(authentication.getName())
+                .orElseThrow(() -> ApiException.unauthorized("Usuário autenticado não encontrado."));
     }
 }

@@ -141,6 +141,17 @@
     width: 100%;
     margin-top: 6px;
 }
+    .auth-submit:disabled { opacity: .6; cursor: wait; transform: none; }
+
+.auth-error {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border-radius: 7px;
+    color: #8f3d31;
+    background: #f5e1dd;
+    font-size: 12px;
+    line-height: 1.5;
+}
 
 .form-footnote {
     margin: 16px 0 0;

@@ -23,21 +23,29 @@ public class DataSeeder implements CommandLineRunner {
     private final CandidaturaRepository candidaturaRepository;
     private final PasswordEncoder passwordEncoder;
     private final String datasourceUrl;
+    private final boolean ligado;
 
     public DataSeeder(UserRepository userRepository,
                       ChallengeRepository challengeRepository,
                       CandidaturaRepository candidaturaRepository,
                       PasswordEncoder passwordEncoder,
-                      @Value("${spring.datasource.url}") String datasourceUrl) {
+                      @Value("${spring.datasource.url}") String datasourceUrl,
+                      @Value("${app.dados-de-exemplo:true}") boolean ligado) {
         this.userRepository = userRepository;
         this.challengeRepository = challengeRepository;
         this.candidaturaRepository = candidaturaRepository;
         this.passwordEncoder = passwordEncoder;
         this.datasourceUrl = datasourceUrl;
+        this.ligado = ligado;
     }
 
     @Override
     public void run(String... args) {
+        // Os testes automáticos criam os próprios dados
+        if (!ligado) {
+            return;
+        }
+
         // Só popula o banco se estiver usando H2 (sem .env)
         if (!datasourceUrl.contains("h2")) {
             System.out.println("🔒 DataSeeder: Banco PostgreSQL detectado. Dados de exemplo NÃO serão inseridos.");
@@ -101,18 +109,20 @@ public class DataSeeder implements CommandLineRunner {
         desafio2.setCriador(mentor);
         challengeRepository.save(desafio2);
 
-        // 4. Cria 1 Candidatura do student no desafio 1
+        // 4. Cria 1 entrega do student no desafio 1, pronta para avaliar em /business/assessment/1
         Candidatura candidatura = new Candidatura();
         candidatura.setCandidato(student);
         candidatura.setDesafio(desafio1);
-        candidatura.setStatus("PENDENTE");
-        candidatura.setDataCandidatura(LocalDateTime.now());
+        candidatura.setStatus("ENVIADO");
+        candidatura.setDataCandidatura(LocalDateTime.now().minusDays(2));
+        candidatura.setLinkEnvio("https://github.com/aluno-trampolim/api-rest-spring");
+        candidatura.setDataEnvio(LocalDateTime.now());
         candidaturaRepository.save(candidatura);
 
         System.out.println("✅ DataSeeder: Dados de exemplo criados com sucesso!");
         System.out.println("   👤 Mentor:  mentor@trampolim.local / senha-teste-123");
         System.out.println("   👤 Student: student@trampolim.local / senha-teste-123");
         System.out.println("   🎯 Desafios criados: 2");
-        System.out.println("   📝 Candidaturas criadas: 1");
+        System.out.println("   📝 Entrega pronta para avaliar: /business/assessment/" + candidatura.getId());
     }
 }
