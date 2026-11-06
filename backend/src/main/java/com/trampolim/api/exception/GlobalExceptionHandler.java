@@ -1,9 +1,13 @@
 package com.trampolim.api.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,6 +20,8 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // Trata erros de validação dos DTOs (ex: @NotBlank, @NotNull)
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -57,15 +63,22 @@ public class GlobalExceptionHandler {
         return erro(HttpStatus.METHOD_NOT_ALLOWED, "Método HTTP não suportado nesta rota.");
     }
 
-    // Trata nossas exceções de regra de negócio (RuntimeException)
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
-        return erro(HttpStatus.BAD_REQUEST, ex.getMessage());
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<Map<String, String>> handleMediaType(HttpMediaTypeNotSupportedException ex) {
+        return erro(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Envie o corpo da requisição em JSON.");
     }
 
-    // Trata qualquer outro erro inesperado (fallback)
+    // Violação de regra do banco (ex: dois cadastros simultâneos com o mesmo e-mail)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrity(DataIntegrityViolationException ex) {
+        log.warn("Violação de integridade: {}", ex.getMostSpecificCause().getMessage());
+        return erro(HttpStatus.CONFLICT, "Os dados enviados conflitam com um registro existente.");
+    }
+
+    // Erro inesperado. O detalhe vai só para o log: a mensagem original pode conter SQL e nomes internos
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
+        log.error("Erro inesperado", ex);
         return erro(HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro interno no servidor. Tente novamente mais tarde.");
     }
 
