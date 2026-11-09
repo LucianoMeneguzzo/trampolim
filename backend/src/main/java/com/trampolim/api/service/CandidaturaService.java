@@ -90,6 +90,11 @@ public class CandidaturaService {
         Candidatura candidatura = buscarComDetalhes(candidaturaId);
         exigirDonoDoDesafio(candidatura.getDesafio(), userService.getAuthenticatedUser());
 
+        // Com o projeto enviado, a inscrição segue para a avaliação e não volta atrás
+        if (candidatura.getLinkEnvio() != null) {
+            throw ApiException.conflict("Esta inscrição já tem projeto enviado. Agora ela só pode ser avaliada.");
+        }
+
         candidatura.setStatus(novoStatus);
         return candidaturaRepository.save(candidatura);
     }

@@ -18,8 +18,9 @@ public interface CandidaturaRepository extends JpaRepository<Candidatura, Long> 
     @Query("SELECT c FROM Candidatura c WHERE c.candidato = :candidato AND c.desafio = :desafio")
     Optional<Candidatura> findByCandidatoAndDesafio(User candidato, Challenge desafio);
 
-    // Busca todas as candidaturas de um desafio, trazendo os dados do candidato E do desafio
-    @Query("SELECT c FROM Candidatura c JOIN FETCH c.candidato JOIN FETCH c.desafio WHERE c.desafio = :desafio")
+    // Busca todas as candidaturas de um desafio, trazendo os dados do candidato E do desafio.
+    // Na ordem de inscrição: sem o ORDER BY, o PostgreSQL muda a ordem a cada atualização de uma linha.
+    @Query("SELECT c FROM Candidatura c JOIN FETCH c.candidato JOIN FETCH c.desafio WHERE c.desafio = :desafio ORDER BY c.dataCandidatura, c.id")
     List<Candidatura> findAllByDesafio(Challenge desafio);
 
     // Inscrições de um aluno, da mais nova para a mais antiga

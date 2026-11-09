@@ -69,6 +69,14 @@ export function listarCandidaturasDoDesafio(desafioId) {
   return apiFetch(`/api/candidaturas/desafio/${desafioId}`)
 }
 
+// PATCH /api/candidaturas/:id/status (só o mentor que publicou): APROVADO ou REJEITADO, enquanto não há envio
+export function alterarStatusCandidatura(id, status) {
+  return apiFetch(`/api/candidaturas/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })
+}
+
 // PUT /api/candidaturas/:id/envio: o back confirma no GitHub que o repositório existe
 export function enviarProjeto(candidaturaId, linkEnvio) {
   return apiFetch(`/api/candidaturas/${candidaturaId}/envio`, {

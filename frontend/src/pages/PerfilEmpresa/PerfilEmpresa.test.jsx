@@ -73,6 +73,37 @@ describe('Perfil do mentor', () => {
     expect(await screen.findByRole('heading', { name: 'Avalie a entrega' })).toBeInTheDocument()
   })
 
+  it('aprova e recusa inscrições que ainda não têm envio', async () => {
+    const fetch = mockApi({
+      'GET /api/usuarios/me': [200, EU],
+      'GET /api/desafios/meus': [200, DESAFIOS],
+      'GET /api/candidaturas/desafio/3': [200, [
+        { id: 40, candidatoId: 5, nomeCandidato: 'Ana Martins', status: 'ENVIADO', linkEnvio: 'https://github.com/ana/api' },
+        { id: 41, candidatoId: 6, nomeCandidato: 'Bruno Lima', status: 'PENDENTE', linkEnvio: null },
+      ]],
+      'PATCH /api/candidaturas/41/status': [200, {}],
+    })
+    renderTela()
+    await screen.findByRole('heading', { name: 'API de pedidos' })
+    fireEvent.click(within(card('API de pedidos')).getByRole('button', { name: 'Ver inscrições' }))
+
+    // Quem já enviou não pode mais ser recusado
+    await screen.findByRole('button', { name: 'Bruno Lima' })
+    expect(screen.queryByRole('button', { name: 'Recusar inscrição de Ana Martins' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Recusar inscrição de Bruno Lima' }))
+
+    expect(await screen.findByText('Não aprovada')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Recusar inscrição de Bruno Lima' })).not.toBeInTheDocument()
+    const patch = fetch.mock.calls.find(([, opcoes]) => opcoes.method === 'PATCH')
+    expect(JSON.parse(patch[1].body)).toEqual({ status: 'REJEITADO' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aprovar inscrição de Bruno Lima' }))
+
+    expect(await screen.findByText('Aprovada · aguardando envio')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Aprovar inscrição de Bruno Lima' })).not.toBeInTheDocument()
+  })
+
   it('esconde a lista ao clicar de novo e avisa quando não há inscritos', async () => {
     mockApi({
       'GET /api/usuarios/me': [200, EU],

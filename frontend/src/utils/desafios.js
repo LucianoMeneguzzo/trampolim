@@ -36,7 +36,7 @@ export function prazoVencido(prazo) {
 // Etapa da inscrição, do ponto de vista de quem lê
 export const LABEL_STATUS = {
   PENDENTE: 'Aguardando envio',
-  APROVADO: 'Aguardando envio',
+  APROVADO: 'Aprovada · aguardando envio',
   REJEITADO: 'Não aprovada',
   ENVIADO: 'Aguardando avaliação',
   AVALIADO: 'Avaliada',

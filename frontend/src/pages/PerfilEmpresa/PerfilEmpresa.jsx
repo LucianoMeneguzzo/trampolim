@@ -8,6 +8,7 @@ import ContaTopbar from '../../components/ContaTopbar/ContaTopbar';
 import EditarPerfil from '../../components/EditarPerfil/EditarPerfil';
 import { buscarMeusDados } from '../../services/auth';
 import {
+  alterarStatusCandidatura,
   alterarStatusDesafio,
   apagarDesafio,
   listarCandidaturasDoDesafio,
@@ -79,6 +80,19 @@ export default function PerfilEmpresa() {
     return tentar(async () => {
       const lista = await listarCandidaturasDoDesafio(desafio.id);
       setAbertos((atual) => ({ ...atual, [desafio.id]: lista }));
+    });
+  }
+
+  // Aprovar ou recusar uma inscrição: só vale enquanto o aluno não enviou o projeto
+  function decidirInscricao(desafio, inscricao, novoStatus) {
+    return tentar(async () => {
+      await alterarStatusCandidatura(inscricao.id, novoStatus);
+      setAbertos((atual) => ({
+        ...atual,
+        [desafio.id]: (atual[desafio.id] ?? []).map((item) => (
+          item.id === inscricao.id ? { ...item, status: novoStatus } : item
+        )),
+      }));
     });
   }
 
@@ -280,7 +294,7 @@ export default function PerfilEmpresa() {
                                 </button>
                                 <small>{LABEL_STATUS[inscricao.status] ?? inscricao.status}</small>
                               </div>
-                              {inscricao.linkEnvio && (
+                              {inscricao.linkEnvio ? (
                                 <button
                                   type="button"
                                   className="challenge-link"
@@ -288,6 +302,29 @@ export default function PerfilEmpresa() {
                                 >
                                   {inscricao.status === 'AVALIADO' ? 'Ver avaliação' : 'Avaliar'}
                                 </button>
+                              ) : (
+                                <div className="company-decisao">
+                                  {inscricao.status !== 'APROVADO' && (
+                                    <button
+                                      type="button"
+                                      className="challenge-link"
+                                      aria-label={`Aprovar inscrição de ${inscricao.nomeCandidato}`}
+                                      onClick={() => decidirInscricao(desafio, inscricao, 'APROVADO')}
+                                    >
+                                      Aprovar
+                                    </button>
+                                  )}
+                                  {inscricao.status !== 'REJEITADO' && (
+                                    <button
+                                      type="button"
+                                      className="challenge-link company-apagar"
+                                      aria-label={`Recusar inscrição de ${inscricao.nomeCandidato}`}
+                                      onClick={() => decidirInscricao(desafio, inscricao, 'REJEITADO')}
+                                    >
+                                      Recusar
+                                    </button>
+                                  )}
+                                </div>
                               )}
                             </li>
                           ))}

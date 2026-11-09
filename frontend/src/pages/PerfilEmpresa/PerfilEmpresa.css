@@ -434,6 +434,7 @@
 .company-inscrito { padding: 0; border: 0; color: #32353c; background: transparent; font-size: 12px; font-weight: 700; text-align: left; }
 .company-inscrito:hover { text-decoration: underline; }
 .company-inscricao-vazia { color: #7f8188; font-size: 12px; }
+.company-decisao { display: flex; flex-shrink: 0; gap: 12px; }
 
 .company-acoes { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--paper-line); }
 .company-apagar { color: #a1432f; }
