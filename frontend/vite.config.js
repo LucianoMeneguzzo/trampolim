@@ -43,6 +43,8 @@ export default defineConfig(({ mode }) => {
       globals: true,
       environment: 'jsdom',
       setupFiles: './src/setupTests.js',
+      // Folga para máquinas lentas e para o CI: o padrão de 5s estoura quando muitos arquivos rodam juntos
+      testTimeout: 20000,
       // npm run coverage: o critério de avaliação pede no mínimo 70%
       coverage: {
         include: ['src/**/*.{js,jsx}'],
