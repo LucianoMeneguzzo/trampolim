@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import Logo from '../../components/Logo/Logo'
 import { getUser } from '../../services/api'
 import { destinoInicial } from '../../services/auth'
+import { buscarMetricas } from '../../services/usuarios'
 import './Home.css'
 
 const activityCells = [
@@ -16,6 +18,20 @@ const activityCells = [
 export default function Home() {
   const navigate = useNavigate()
   const usuario = getUser()
+  const [numeros, setNumeros] = useState(null)
+
+  // Números reais da plataforma. Se a API não responder, o cartão fica só como ilustração.
+  useEffect(() => {
+    let ativo = true
+    buscarMetricas()
+      .then((metricas) => { if (ativo) setNumeros(metricas) })
+      .catch(() => {})
+    return () => { ativo = false }
+  }, [])
+
+  const resumo = numeros
+    ? `${numeros.desafios} ${numeros.desafios === 1 ? 'desafio publicado' : 'desafios publicados'} · ${numeros.avaliados} ${numeros.avaliados === 1 ? 'entrega avaliada' : 'entregas avaliadas'}`
+    : 'Exemplo de atividade'
 
   return (
     <main className="home-shell">
@@ -65,7 +81,7 @@ export default function Home() {
         </div>
 
         <div className="home-proof">
-          <article className="proof-card" aria-label="Exemplo de atividade de uma aluna">
+          <article className="proof-card" aria-label="Exemplo de perfil público">
             <div className="proof-top">
               <div>
                 <div className="proof-kicker">perfil público</div>
@@ -74,14 +90,14 @@ export default function Home() {
               <div className="mini-avatar">P</div>
             </div>
 
-            <div className="activity-grid" aria-label="34 desafios concluídos">
+            <div className="activity-grid" aria-hidden="true">
               {activityCells.map((level, index) => (
                 <i key={index} className={level} aria-hidden="true" />
               ))}
             </div>
 
             <div className="activity-legend">
-              <span>34 desafios concluídos</span>
+              <span>{resumo}</span>
               <span className="activity-key">
                 menos <b></b><b></b><b></b><b></b> mais
               </span>

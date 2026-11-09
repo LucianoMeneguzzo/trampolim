@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import App from '../../App'
@@ -12,6 +12,13 @@ function renderTela() {
   )
 }
 
+const METRICAS = { desafios: 3, inscricoes: 5, enviados: 2, avaliados: 1, taxaConclusao: 20, inscricoesPorMes: [] }
+
+// Com chaves: se o beforeEach devolvesse a função do mock, o Vitest a chamaria ao fim de cada teste
+beforeEach(() => {
+  mockApi({ 'GET /api/metricas': [200, METRICAS] })
+})
+
 afterEach(() => {
   cleanup()
   localStorage.clear()
@@ -19,6 +26,20 @@ afterEach(() => {
 })
 
 describe('Home', () => {
+  it('mostra os números reais da plataforma', async () => {
+    renderTela()
+
+    expect(await screen.findByText('3 desafios publicados · 1 entrega avaliada')).toBeInTheDocument()
+  })
+
+  it('fica só com a ilustração quando a API não responde', async () => {
+    mockApi({ 'GET /api/metricas': [500, {}] })
+    renderTela()
+
+    expect(await screen.findByText('Exemplo de atividade')).toBeInTheDocument()
+    expect(screen.queryByText(/desafios publicados/)).not.toBeInTheDocument()
+  })
+
   it('oferece entrar e criar perfil para visitantes', () => {
     renderTela()
 
