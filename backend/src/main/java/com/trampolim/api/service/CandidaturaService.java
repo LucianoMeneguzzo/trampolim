@@ -32,14 +32,17 @@ public class CandidaturaService {
     private final AvaliacaoRepository avaliacaoRepository;
     private final UserService userService;
     private final GitHubService gitHubService;
+    private final NotificacaoService notificacoes;
 
     public CandidaturaService(CandidaturaRepository candidaturaRepository, ChallengeRepository challengeRepository,
-                              AvaliacaoRepository avaliacaoRepository, UserService userService, GitHubService gitHubService) {
+                              AvaliacaoRepository avaliacaoRepository, UserService userService, GitHubService gitHubService,
+                              NotificacaoService notificacoes) {
         this.candidaturaRepository = candidaturaRepository;
         this.challengeRepository = challengeRepository;
         this.avaliacaoRepository = avaliacaoRepository;
         this.userService = userService;
         this.gitHubService = gitHubService;
+        this.notificacoes = notificacoes;
     }
 
     public Candidatura aplicarParaDesafio(CandidaturaDTO dto) {
@@ -69,7 +72,13 @@ public class CandidaturaService {
         candidatura.setStatus("PENDENTE");
         candidatura.setDataCandidatura(LocalDateTime.now());
 
-        return candidaturaRepository.save(candidatura);
+        Candidatura salva = candidaturaRepository.save(candidatura);
+
+        User mentor = desafio.getCriador();
+        if (mentor != null) {
+            notificacoes.novaInscricao(mentor.getEmail(), mentor.getName(), candidato.getName(), desafio.getTitulo());
+        }
+        return salva;
     }
 
     // Só o mentor que publicou o desafio vê quem se inscreveu
@@ -96,7 +105,11 @@ public class CandidaturaService {
         }
 
         candidatura.setStatus(novoStatus);
-        return candidaturaRepository.save(candidatura);
+        Candidatura salva = candidaturaRepository.save(candidatura);
+
+        User aluno = candidatura.getCandidato();
+        notificacoes.inscricaoDecidida(aluno.getEmail(), aluno.getName(), candidatura.getDesafio().getTitulo(), "APROVADO".equals(novoStatus));
+        return salva;
     }
 
     // Inscrições do aluno logado, com a avaliação de cada uma quando já houver
@@ -136,6 +149,11 @@ public class CandidaturaService {
         candidatura.setStatus("ENVIADO");
 
         candidaturaRepository.save(candidatura);
+
+        User mentor = candidatura.getDesafio().getCriador();
+        if (mentor != null) {
+            notificacoes.projetoEnviado(mentor.getEmail(), mentor.getName(), aluno.getName(), candidatura.getDesafio().getTitulo(), candidatura.getId());
+        }
         return candidatura;
     }
 

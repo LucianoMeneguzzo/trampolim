@@ -38,6 +38,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
+		<!-- Envio de e-mail por SMTP (avisos de inscrição, entrega e avaliação) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
 		<!-- /actuator/health: a hospedagem usa para saber se o back está de pé -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
