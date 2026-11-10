@@ -10,7 +10,7 @@ Plataforma que conecta aluno e mentor através de desafios práticos reais. O al
 - **Back-end:** Java + Spring Boot
 - **Banco de dados:** PostgreSQL (Supabase); H2 em memória para rodar local e nos testes
 - **Autenticação:** JWT via Spring Security
-- **APIs externas:** GitHub API (valida o repositório enviado pelo aluno), serviço de e-mail (notificações, ainda não implementado)
+- **APIs externas:** GitHub API (valida o repositório enviado pelo aluno), e-mail por SMTP (avisos de inscrição, entrega e avaliação)
 - **Infraestrutura:** GitHub Actions (testes a cada Pull Request)
 
 ## Estrutura do repositório
@@ -68,8 +68,7 @@ Navegador (React + Vite)  --HTTP/JSON + token JWT-->  API (Spring Boot)  --JPA--
 - **Perfil do aluno:** página pública em `/student/profile/:id`, sem login e sem e-mail, que funciona como portfólio. O próprio aluno edita os dados e acompanha as inscrições.
 - **Perfil do mentor:** desafios publicados, inscrições de cada um, aprovação ou recusa de inscrição e atalho para avaliar.
 - **Painel de métricas:** totais, inscrições por mês e funil da inscrição à avaliação, em `/metricas`.
-
-**Ainda não implementado:** e-mail avisando o aluno sobre a avaliação e o mentor sobre nova inscrição.
+- **Avisos por e-mail:** o mentor é avisado de cada inscrição e de cada entrega; o aluno, da aprovação ou recusa e da avaliação. Sem servidor de e-mail configurado, os avisos só aparecem no log do back-end.
 
 ## Aspectos relevantes
 

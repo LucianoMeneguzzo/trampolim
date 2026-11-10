@@ -74,9 +74,32 @@ Ao publicar, defina `SPRING_PROFILES_ACTIVE=prod`. Esse perfil usa o `applicatio
 | `JWT_EXPIRATION` | Validade do token em milissegundos (padrão: 24 horas) |
 | `CORS_ALLOWED_ORIGINS` | Endereços do front que podem chamar a API, separados por vírgula |
 | `GITHUB_TOKEN` | Opcional: evita o limite de 60 consultas por hora na API do GitHub |
+| `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM` | Opcional: servidor SMTP dos avisos por e-mail |
 | `PORT` | Porta do servidor (padrão: 8080). As hospedagens definem sozinhas |
 
 `GET /actuator/health` responde `{"status":"UP"}` quando o back e o banco estão de pé. É o único endereço de monitoramento exposto.
+
+## ✉️ Avisos por e-mail
+
+| Quando | Quem recebe |
+|---|---|
+| Aluno se inscreve num desafio | Mentor que publicou |
+| Mentor aprova ou recusa a inscrição | Aluno |
+| Aluno envia o projeto | Mentor que publicou |
+| Mentor avalia a entrega | Aluno |
+
+Sem configuração, nada é enviado: o aviso aparece só no log (`E-mail não configurado...`). Para enviar de verdade, preencha no `.env` os dados de um servidor SMTP. Exemplo com o Gmail:
+
+```env
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=seu-email@gmail.com
+MAIL_PASSWORD=senha-de-app
+```
+
+No Gmail, a `MAIL_PASSWORD` é uma **senha de app**, criada em myaccount.google.com/apppasswords com a verificação em duas etapas ligada. A senha normal da conta não funciona.
+
+O e-mail sai em segundo plano. Se o servidor de e-mail falhar, a inscrição ou a avaliação é gravada do mesmo jeito, e o erro vai para o log.
 
 ## 🔐 Autenticação
 
@@ -468,7 +491,7 @@ cd backend
 ./mvnw test
 ```
 
-O projeto possui 58 testes automatizados cobrindo as principais regras de negócio e de segurança. O GitHub Actions roda todos a cada Pull Request. O relatório de cobertura fica em `target/site/jacoco/index.html`.
+O projeto possui 68 testes automatizados cobrindo as principais regras de negócio e de segurança. O GitHub Actions roda todos a cada Pull Request. O relatório de cobertura fica em `target/site/jacoco/index.html`.
 
 ## 📂 Estrutura do projeto
 
