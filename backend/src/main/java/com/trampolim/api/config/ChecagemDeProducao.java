@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-// Só existe no perfil "prod" (SPRING_PROFILES_ACTIVE=prod, que a imagem Docker já define).
+// Só existe no perfil "prod" (SPRING_PROFILES_ACTIVE=prod), usado quando o projeto é publicado.
 // Em desenvolvimento o back sobe sozinho, com banco em memória e chave sorteada. Em produção isso
 // seria um risco: dados que somem e um login de exemplo com senha pública. Por isso, aqui o back
 // se recusa a subir enquanto faltar configuração.
