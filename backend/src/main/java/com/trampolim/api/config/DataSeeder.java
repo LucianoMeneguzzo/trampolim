@@ -1,9 +1,11 @@
 package com.trampolim.api.config;
 
+import com.trampolim.api.entity.Avaliacao;
 import com.trampolim.api.entity.Candidatura;
 import com.trampolim.api.entity.Challenge;
 import com.trampolim.api.entity.User;
 import com.trampolim.api.entity.UserType;
+import com.trampolim.api.repository.AvaliacaoRepository;
 import com.trampolim.api.repository.CandidaturaRepository;
 import com.trampolim.api.repository.ChallengeRepository;
 import com.trampolim.api.repository.UserRepository;
@@ -21,6 +23,7 @@ public class DataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final ChallengeRepository challengeRepository;
     private final CandidaturaRepository candidaturaRepository;
+    private final AvaliacaoRepository avaliacaoRepository;
     private final PasswordEncoder passwordEncoder;
     private final String datasourceUrl;
     private final boolean ligado;
@@ -28,12 +31,14 @@ public class DataSeeder implements CommandLineRunner {
     public DataSeeder(UserRepository userRepository,
                       ChallengeRepository challengeRepository,
                       CandidaturaRepository candidaturaRepository,
+                      AvaliacaoRepository avaliacaoRepository,
                       PasswordEncoder passwordEncoder,
                       @Value("${spring.datasource.url}") String datasourceUrl,
                       @Value("${app.dados-de-exemplo:true}") boolean ligado) {
         this.userRepository = userRepository;
         this.challengeRepository = challengeRepository;
         this.candidaturaRepository = candidaturaRepository;
+        this.avaliacaoRepository = avaliacaoRepository;
         this.passwordEncoder = passwordEncoder;
         this.datasourceUrl = datasourceUrl;
         this.ligado = ligado;
@@ -84,7 +89,7 @@ public class DataSeeder implements CommandLineRunner {
         student.setLinkedin("https://linkedin.com/in/aluno-trampolim");
         userRepository.save(student);
 
-        // 3. Cria 2 Desafios
+        // 3. Cria 3 Desafios
         Challenge desafio1 = new Challenge();
         desafio1.setTitulo("API REST com Spring Boot");
         desafio1.setDescricao("Desenvolver uma API REST completa com autenticação JWT, CRUD de usuários e testes unitários.");
@@ -109,6 +114,18 @@ public class DataSeeder implements CommandLineRunner {
         desafio2.setCriador(mentor);
         challengeRepository.save(desafio2);
 
+        Challenge desafio3 = new Challenge();
+        desafio3.setTitulo("Landing page para uma cafeteria");
+        desafio3.setDescricao("Criar uma página responsiva que apresente o cardápio e receba pedidos pelo WhatsApp.");
+        desafio3.setTecnologias("HTML, CSS, JavaScript");
+        desafio3.setNivel("INICIANTE");
+        desafio3.setPrazo(LocalDate.now().plusDays(10));
+        desafio3.setVagas(15);
+        desafio3.setEmpresa("Café Horizonte");
+        desafio3.setDataCriacao(LocalDateTime.now().minusDays(20));
+        desafio3.setCriador(mentor);
+        challengeRepository.save(desafio3);
+
         // 4. Cria 1 entrega do student no desafio 1, pronta para avaliar em /business/assessment/1
         Candidatura candidatura = new Candidatura();
         candidatura.setCandidato(student);
@@ -119,10 +136,30 @@ public class DataSeeder implements CommandLineRunner {
         candidatura.setDataEnvio(LocalDateTime.now());
         candidaturaRepository.save(candidatura);
 
+        // 5. Cria 1 trabalho já avaliado, para o perfil público do aluno não começar vazio
+        Candidatura concluida = new Candidatura();
+        concluida.setCandidato(student);
+        concluida.setDesafio(desafio3);
+        concluida.setStatus("AVALIADO");
+        concluida.setDataCandidatura(LocalDateTime.now().minusDays(18));
+        concluida.setLinkEnvio("https://github.com/aluno-trampolim/landing-cafeteria");
+        concluida.setRepoLinguagem("HTML");
+        concluida.setRepoUltimoCommit(LocalDateTime.now().minusDays(13));
+        concluida.setDataEnvio(LocalDateTime.now().minusDays(12));
+        candidaturaRepository.save(concluida);
+
+        Avaliacao avaliacao = new Avaliacao();
+        avaliacao.setCandidatura(concluida);
+        avaliacao.setMentor(mentor);
+        avaliacao.setNota(9);
+        avaliacao.setFeedback("Página clara e bem organizada, com boa atenção ao celular. Próximo passo: otimizar as imagens.");
+        avaliacao.setDataAvaliacao(LocalDateTime.now().minusDays(10));
+        avaliacaoRepository.save(avaliacao);
+
         System.out.println("✅ DataSeeder: Dados de exemplo criados com sucesso!");
         System.out.println("   👤 Mentor:  mentor@trampolim.local / senha-teste-123");
         System.out.println("   👤 Student: student@trampolim.local / senha-teste-123");
-        System.out.println("   🎯 Desafios criados: 2");
+        System.out.println("   🎯 Desafios criados: 3");
         System.out.println("   📝 Entrega pronta para avaliar: /business/assessment/" + candidatura.getId());
     }
 }

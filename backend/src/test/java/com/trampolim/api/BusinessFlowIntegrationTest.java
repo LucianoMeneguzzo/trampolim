@@ -13,6 +13,7 @@ import java.util.Map;
 
 import static com.trampolim.api.TestHelper.bearer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -86,21 +87,20 @@ class BusinessFlowIntegrationTest {
     }
 
     @Test
-    void lerDesafiosExigeLogin() throws Exception {
+    void desafiosPodemSerLidosSemLogin() throws Exception {
         String mentor = helper.novoUsuarioComToken("Marina", "MENTOR");
         long id = criarDesafio(mentor);
 
-        mvc.perform(get("/api/desafios"))
-                .andExpect(status().isUnauthorized());
-
-        mvc.perform(get("/api/desafios/" + id).header("Authorization", bearer(mentor)))
+        mvc.perform(get("/api/desafios/" + id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.nomeCriador").value("Marina"));
-        mvc.perform(get("/api/desafios").header("Authorization", bearer(mentor)))
+                .andExpect(jsonPath("$.nomeCriador").value("Marina"))
+                .andExpect(jsonPath("$.status").value("ABERTO"))
+                .andExpect(jsonPath("$.inscritos").value(0));
+        mvc.perform(get("/api/desafios"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].nomeCriador").exists());
-        mvc.perform(get("/api/desafios/999999").header("Authorization", bearer(mentor)))
+        mvc.perform(get("/api/desafios/999999"))
                 .andExpect(status().isNotFound());
     }
 
@@ -239,6 +239,59 @@ class BusinessFlowIntegrationTest {
                         .content(helper.toJson(avaliacao(7))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.erro").value("Esta inscrição ainda não tem projeto enviado."));
+    }
+
+    @Test
+    void mentorAprovaERecusaInscricaoAntesDoEnvio() throws Exception {
+        String mentor = helper.novoUsuarioComToken("Rafael", "MENTOR");
+        String outroMentor = helper.novoUsuarioComToken("Outro", "MENTOR");
+        String aluno = helper.novoUsuarioComToken("Ana", "STUDENT");
+        long candidaturaId = inscrever(aluno, criarDesafio(mentor));
+
+        // Só o dono do desafio decide, e só entre os dois valores aceitos
+        mvc.perform(patch("/api/candidaturas/" + candidaturaId + "/status")
+                        .header("Authorization", bearer(outroMentor))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(helper.toJson(Map.of("status", "REJEITADO"))))
+                .andExpect(status().isForbidden());
+        mvc.perform(patch("/api/candidaturas/" + candidaturaId + "/status")
+                        .header("Authorization", bearer(mentor))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(helper.toJson(Map.of("status", "AVALIADO"))))
+                .andExpect(status().isBadRequest());
+
+        // Recusada: o aluno não consegue enviar
+        mvc.perform(patch("/api/candidaturas/" + candidaturaId + "/status")
+                        .header("Authorization", bearer(mentor))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(helper.toJson(Map.of("status", "REJEITADO"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("REJEITADO"));
+        mvc.perform(put("/api/candidaturas/" + candidaturaId + "/envio")
+                        .header("Authorization", bearer(aluno))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(helper.toJson(Map.of("linkEnvio", "github.com/ana/api-pedidos"))))
+                .andExpect(status().isBadRequest());
+
+        // O mentor volta atrás, aprova, e o envio passa
+        mvc.perform(patch("/api/candidaturas/" + candidaturaId + "/status")
+                        .header("Authorization", bearer(mentor))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(helper.toJson(Map.of("status", "APROVADO"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("APROVADO"));
+        mvc.perform(put("/api/candidaturas/" + candidaturaId + "/envio")
+                        .header("Authorization", bearer(aluno))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(helper.toJson(Map.of("linkEnvio", "github.com/ana/api-pedidos"))))
+                .andExpect(status().isOk());
+
+        // Com o projeto enviado, a decisão não pode mais mudar
+        mvc.perform(patch("/api/candidaturas/" + candidaturaId + "/status")
+                        .header("Authorization", bearer(mentor))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(helper.toJson(Map.of("status", "REJEITADO"))))
+                .andExpect(status().isConflict());
     }
 
     @Test

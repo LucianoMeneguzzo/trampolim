@@ -18,8 +18,9 @@ cd backend
 A aplicação sobe na porta `8080` e cria automaticamente:
 - 1 mentor: `mentor@trampolim.local` / `senha-teste-123`
 - 1 aluno: `student@trampolim.local` / `senha-teste-123`
-- 2 desafios de exemplo
+- 3 desafios de exemplo
 - 1 entrega já enviada pelo aluno, pronta para avaliar em `/business/assessment/1`
+- 1 trabalho já avaliado, para o perfil público do aluno não começar vazio
 
 Sem o `.env`, a chave do JWT é sorteada a cada vez que o backend sobe: os logins caem ao reiniciar.
 
@@ -39,13 +40,16 @@ cp .env.example .env
 2. Edite o `.env` com suas credenciais do Supabase:
 
 ```env
-DB_URL=jdbc:postgresql://db.xxxxx.supabase.co:5432/postgres
-DB_USERNAME=postgres
+DB_URL=jdbc:postgresql://aws-0-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+DB_USERNAME=postgres.xxxxx
 DB_PASSWORD=sua_senha
 JWT_SECRET=uma_chave_muito_segura_aqui
 JWT_EXPIRATION=86400000
 CORS_ALLOWED_ORIGINS=http://localhost:5173
+GITHUB_TOKEN=opcional
 ```
+
+Os dados do banco estão no Supabase, em **Connect > Session pooler**. Para a `JWT_SECRET`, gere um valor com `openssl rand -hex 32`.
 
 3. Rode a aplicação:
 
@@ -54,6 +58,48 @@ CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
 > ⚠️ O arquivo `.env` está no `.gitignore` e **nunca deve ser commitado**.
+
+## 🚢 Produção
+
+Ao publicar, defina `SPRING_PROFILES_ACTIVE=prod`. Esse perfil usa o `application-prod.properties`:
+
+- não cria os dados de exemplo e desliga o console do H2 e o log de SQL;
+- **não sobe** se `DB_URL` não apontar para um PostgreSQL, se a `JWT_SECRET` faltar, tiver menos de 32 caracteres ou for a do `.env.example`, ou se `CORS_ALLOWED_ORIGINS` estiver vazia. O erro no log diz o que falta;
+- lê o IP real de quem chamou, mesmo atrás do proxy da hospedagem.
+
+| Variável | Para que serve |
+|---|---|
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Banco PostgreSQL |
+| `JWT_SECRET` | Chave que assina os tokens (32 caracteres ou mais) |
+| `JWT_EXPIRATION` | Validade do token em milissegundos (padrão: 24 horas) |
+| `CORS_ALLOWED_ORIGINS` | Endereços do front que podem chamar a API, separados por vírgula |
+| `GITHUB_TOKEN` | Opcional: evita o limite de 60 consultas por hora na API do GitHub |
+| `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM` | Opcional: servidor SMTP dos avisos por e-mail |
+| `PORT` | Porta do servidor (padrão: 8080). As hospedagens definem sozinhas |
+
+`GET /actuator/health` responde `{"status":"UP"}` quando o back e o banco estão de pé. É o único endereço de monitoramento exposto.
+
+## ✉️ Avisos por e-mail
+
+| Quando | Quem recebe |
+|---|---|
+| Aluno se inscreve num desafio | Mentor que publicou |
+| Mentor aprova ou recusa a inscrição | Aluno |
+| Aluno envia o projeto | Mentor que publicou |
+| Mentor avalia a entrega | Aluno |
+
+Sem configuração, nada é enviado: o aviso aparece só no log (`E-mail não configurado...`). Para enviar de verdade, preencha no `.env` os dados de um servidor SMTP. Exemplo com o Gmail:
+
+```env
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=seu-email@gmail.com
+MAIL_PASSWORD=senha-de-app
+```
+
+No Gmail, a `MAIL_PASSWORD` é uma **senha de app**, criada em myaccount.google.com/apppasswords com a verificação em duas etapas ligada. A senha normal da conta não funciona.
+
+O e-mail sai em segundo plano. Se o servidor de e-mail falhar, a inscrição ou a avaliação é gravada do mesmo jeito, e o erro vai para o log.
 
 ## 🔐 Autenticação
 
@@ -69,6 +115,14 @@ Para obter o token, use a rota `POST /api/auth/login`.
 |---|---|
 | Sem token, token inválido ou expirado em rota protegida | `401 { "erro": "Faça login para continuar." }` |
 | Logado, mas com o perfil errado (ex.: aluno criando desafio) | `403 { "erro": "Seu perfil não tem permissão para esta ação." }` |
+| Tentativas demais de login ou de cadastro | `429 { "erro": "Muitas tentativas. Aguarde alguns minutos e tente de novo." }` |
+
+### Limite de tentativas
+
+- **Login:** 5 senhas erradas para o mesmo e-mail, vindas do mesmo IP, bloqueiam novas tentativas por 15 minutos. Acertar a senha zera a contagem. Há também um teto de 50 erros por IP, para quem testa uma lista de e-mails.
+- **Cadastro:** no máximo 20 tentativas por hora a partir do mesmo IP.
+
+Os números ficam no `application.properties` (`app.limite.*`). A contagem fica na memória do back: ao reiniciar, zera.
 
 O front em `http://localhost:5173` já pode chamar a API. Para liberar outros endereços, use a variável `CORS_ALLOWED_ORIGINS`.
 
@@ -100,6 +154,7 @@ O campo `type` aceita apenas: `MENTOR` ou `STUDENT`. A senha precisa ter de 8 a 
 - `201` com o usuário criado (sem a senha)
 - `400` campo inválido, ex.: `{ "password": "A senha precisa ter entre 8 e 72 caracteres" }`
 - `409` `{ "erro": "Este e-mail já está cadastrado." }`
+- `429` cadastros demais a partir do mesmo IP
 
 ---
 
@@ -126,13 +181,72 @@ POST /api/auth/login
 }
 ```
 
-E-mail ou senha errados: `401 { "erro": "E-mail ou senha inválidos." }`
+E-mail ou senha errados: `401 { "erro": "E-mail ou senha inválidos." }`. Depois de 5 erros seguidos: `429`.
+
+---
+
+#### Meus dados (autenticado)
+```http
+GET /api/usuarios/me
+```
+
+---
+
+#### Editar o próprio perfil (autenticado)
+```http
+PUT /api/usuarios/me
+```
+
+**Corpo da requisição:**
+```json
+{
+  "name": "Ana Martins",
+  "professionalTitle": "Dev em formação",
+  "bio": "Construo APIs.",
+  "github": "github.com/ana-martins",
+  "linkedin": "linkedin.com/in/ana-martins"
+}
+```
+
+Só `name` é obrigatório. Os links precisam ser do GitHub e do LinkedIn: como viram links no perfil público, outros endereços são recusados com `400`.
+
+---
+
+#### Perfil público (público)
+```http
+GET /api/usuarios/{id}
+```
+
+Dados do perfil, sem o e-mail, e `trabalhos`: as entregas avaliadas por mentores, que formam o portfólio.
+
+---
+
+### 📊 Métricas
+
+#### Painel de métricas (público)
+```http
+GET /api/metricas
+```
+
+**Resposta de sucesso (200):**
+```json
+{
+  "desafios": 3,
+  "inscricoes": 10,
+  "enviados": 7,
+  "avaliados": 5,
+  "taxaConclusao": 50,
+  "inscricoesPorMes": [{ "mes": "2026-11", "total": 4 }]
+}
+```
+
+`inscricoesPorMes` sempre traz os últimos 6 meses.
 
 ---
 
 ### 🎯 Desafios
 
-#### Listar todos os desafios (autenticado)
+#### Listar todos os desafios (público)
 ```http
 GET /api/desafios
 ```
@@ -150,19 +264,30 @@ GET /api/desafios
     "vagas": 5,
     "empresa": "TechCorp",
     "dataCriacao": "2026-10-31T09:00:00",
-    "nomeCriador": "Mentor Trampolim"
+    "nomeCriador": "Mentor Trampolim",
+    "criadorId": 1,
+    "status": "ABERTO"
   }
 ]
 ```
 
 ---
 
-#### Buscar desafio por ID (autenticado)
+#### Buscar desafio por ID (público)
 ```http
 GET /api/desafios/{id}
 ```
 
-**Resposta de sucesso (200):** Mesma estrutura do objeto acima.
+**Resposta de sucesso (200):** Mesma estrutura do objeto acima, mais `inscritos`.
+
+---
+
+#### Meus desafios (apenas MENTOR)
+```http
+GET /api/desafios/meus
+```
+
+Os desafios do mentor logado, com `inscritos` e `entregas` de cada um.
 
 ---
 
@@ -188,6 +313,33 @@ O criador é vinculado automaticamente ao mentor autenticado.
 
 ---
 
+#### Editar desafio (apenas MENTOR que publicou)
+```http
+PUT /api/desafios/{id}
+```
+
+Mesmo corpo da criação.
+
+---
+
+#### Abrir ou fechar as inscrições (apenas MENTOR que publicou)
+```http
+PATCH /api/desafios/{id}/status
+```
+
+**Corpo da requisição:** `{ "status": "FECHADO" }` (ou `ABERTO`). As inscrições e avaliações que já existem continuam valendo.
+
+---
+
+#### Apagar desafio (apenas MENTOR que publicou)
+```http
+DELETE /api/desafios/{id}
+```
+
+Responde `204`. Desafio com inscrições não pode ser apagado (`409`): feche as inscrições em vez disso.
+
+---
+
 ### 📝 Candidaturas
 
 #### Candidatar-se a um desafio (apenas STUDENT)
@@ -202,7 +354,16 @@ POST /api/candidaturas
 }
 ```
 
-⚠️ Inscrições repetidas no mesmo desafio retornam **409 Conflict**.
+⚠️ Inscrições repetidas no mesmo desafio retornam **409 Conflict**, assim como desafio sem vagas. Desafio fechado ou com o prazo vencido retorna **400**.
+
+---
+
+#### Minhas inscrições (apenas STUDENT)
+```http
+GET /api/candidaturas/minhas
+```
+
+As inscrições do aluno logado, cada uma com `avaliacao` quando já houver.
 
 ---
 
@@ -219,6 +380,8 @@ GET /api/candidaturas/{id}
   "dataCandidatura": "2026-10-31T09:05:00",
   "nomeCandidato": "Aluno Trampolim",
   "emailCandidato": "student@trampolim.local",
+  "candidatoId": 2,
+  "desafioId": 1,
   "tituloDesafio": "API REST com Spring Boot",
   "linkEnvio": null,
   "dataEnvio": null,
@@ -255,6 +418,8 @@ PUT /api/candidaturas/{id}/envio
 
 O aluno só pode enviar o projeto das suas próprias candidaturas. O status muda para `ENVIADO`. O link precisa ser de um repositório do GitHub, e candidaturas `REJEITADO` ou `AVALIADO` não aceitam novo envio.
 
+O back consulta a API do GitHub: repositório inexistente ou privado responde `400`; quando existe, `repoLinguagem` e `repoUltimoCommit` são preenchidos. Se o GitHub estiver fora do ar ou no limite de consultas, o envio é aceito sem esses dados.
+
 ---
 
 #### Aprovar ou rejeitar candidatura (apenas MENTOR dono do desafio)
@@ -269,7 +434,7 @@ PATCH /api/candidaturas/{id}/status
 }
 ```
 
-O campo `status` aceita apenas: `APROVADO` ou `REJEITADO`.
+O campo `status` aceita apenas: `APROVADO` ou `REJEITADO`. Inscrição rejeitada não aceita envio. Depois que o aluno envia o projeto, a decisão não muda mais (`409`).
 
 ---
 
@@ -313,7 +478,7 @@ Validação de campos (`400`):
 { "desafioId": "O ID do desafio é obrigatório" }
 ```
 
-Demais erros (`400`, `401`, `403`, `404`, `409`, `500`):
+Demais erros (`400`, `401`, `403`, `404`, `409`, `429`, `500`):
 
 ```json
 { "erro": "Mensagem explicando o problema" }
@@ -326,24 +491,25 @@ cd backend
 ./mvnw test
 ```
 
-O projeto possui 17 testes automatizados cobrindo as principais regras de negócio.
+O projeto possui 68 testes automatizados cobrindo as principais regras de negócio e de segurança. O GitHub Actions roda todos a cada Pull Request. O relatório de cobertura fica em `target/site/jacoco/index.html`.
 
 ## 📂 Estrutura do projeto
 
 ```
 backend/
 ├── src/main/java/com/trampolim/api/
-│   ├── config/          # SecurityConfig e DataSeeder
+│   ├── config/          # SecurityConfig, DataSeeder e ChecagemDeProducao
 │   ├── controller/      # Controllers REST
 │   ├── dto/             # Data Transfer Objects
 │   ├── entity/          # Entidades JPA
 │   ├── exception/       # Tratamento global de exceções
 │   ├── repository/      # Repositórios Spring Data
-│   ├── security/        # Filtros JWT e provedores
+│   ├── security/        # Filtro JWT e limite de tentativas
 │   ├── service/         # Lógica de negócio
 │   └── Application.java # Classe principal
 ├── src/main/resources/
-│   └── application.properties
+│   ├── application.properties       # desenvolvimento
+│   └── application-prod.properties  # o que muda em produção
 ├── .env.example         # Modelo de variáveis de ambiente
 └── pom.xml
 ```
@@ -351,7 +517,7 @@ backend/
 ## 🛠️ Tecnologias
 
 - Java 21
-- Spring Boot 3.3.4
+- Spring Boot 3.5.16
 - Spring Security com JWT
 - Spring Data JPA
 - PostgreSQL (produção) / H2 (desenvolvimento)

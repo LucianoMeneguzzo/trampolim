@@ -55,6 +55,12 @@ public class CandidaturaController {
         return ResponseEntity.ok(new CandidaturaRespostaDTO(candidaturaAtualizada));
     }
 
+    // Inscrições do aluno logado
+    @GetMapping("/minhas")
+    public ResponseEntity<List<CandidaturaRespostaDTO>> listarMinhasCandidaturas() {
+        return ResponseEntity.ok(candidaturaService.listarMinhasCandidaturas());
+    }
+
     // Detalhe de uma candidatura, com a avaliação se já houver — mentor dono do desafio ou o próprio aluno
     @GetMapping("/{id}")
     public ResponseEntity<CandidaturaRespostaDTO> buscarCandidaturaPorId(@PathVariable Long id) {

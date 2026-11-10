@@ -1,0 +1,92 @@
+/* Detalhe do desafio. Segue o tema escuro da lista (Desafio.css), com prefixo "detalhe-"
+   porque o CSS do Vite é global. */
+.detalhe-pad { padding: 32px clamp(24px, 4vw, 56px) 56px; }
+
+.detalhe-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(270px, .65fr); gap: 38px; }
+.detalhe-main { min-width: 0; }
+
+.detalhe-voltar {
+  padding: 0;
+  margin-bottom: 22px;
+  border: 0;
+  color: #9a9ca2;
+  background: transparent;
+  font-size: 12px;
+}
+.detalhe-voltar:hover { color: #e8a33d; }
+
+.detalhe-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+
+.detalhe-chip {
+  padding: 4px 9px;
+  border: 1px solid #3a3c44;
+  border-radius: 999px;
+  color: #c9c6bd;
+  font-family: var(--mono);
+  font-size: 10px;
+}
+.detalhe-chip.nivel { border-color: rgba(232, 163, 61, .5); color: #e8a33d; }
+.detalhe-chip.aberto { border-color: rgba(107, 144, 128, .6); color: #9dc5b4; }
+.detalhe-chip.fechado { border-color: #55575e; color: #9a9ca2; }
+
+.detalhe-main h1 {
+  max-width: 680px;
+  margin: 14px 0 26px;
+  color: #f4f0e7;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -.02em;
+  overflow-wrap: anywhere;
+}
+
+.detalhe-secao { padding: 26px 0; border-top: 1px solid #34363a; }
+.detalhe-secao h2 { margin: 0 0 12px; color: #f4f0e7; font-size: 16px; }
+.detalhe-secao p { margin: 0; color: #b6b4ad; font-size: 14px; line-height: 1.7; white-space: pre-line; overflow-wrap: anywhere; }
+
+.detalhe-lado {
+  align-self: start;
+  padding: 20px;
+  border: 1px solid #34363a;
+  border-radius: 12px;
+  background: #202124;
+}
+.detalhe-lado h3 { margin: 0 0 16px; color: #f4f0e7; font-size: 17px; }
+.detalhe-lado .btn { width: 100%; }
+.detalhe-lado .btn:disabled { cursor: not-allowed; opacity: .6; }
+
+.detalhe-fatos { display: grid; gap: 12px; margin: 0 0 18px; padding-bottom: 18px; border-bottom: 1px solid #34363a; }
+.detalhe-fatos div { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; }
+.detalhe-fatos dt { color: #9a9ca2; font-size: 12px; }
+.detalhe-fatos dd { margin: 0; color: #f4f0e7; font-family: var(--mono); font-size: 11px; text-align: right; }
+
+.detalhe-mentor { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.detalhe-mentor-foto {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 50%;
+  color: #17181a;
+  background: #e8a33d;
+  font-size: 11px;
+  font-weight: 700;
+}
+.detalhe-mentor small { display: block; color: #9a9ca2; font-size: 10px; }
+.detalhe-mentor strong { display: block; color: #f4f0e7; font-size: 13px; }
+
+.detalhe-nota { margin: 12px 0 0; color: #9a9ca2; font-size: 12px; line-height: 1.5; }
+
+.detalhe-erro {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  color: #f7d9d1;
+  background: rgba(191, 97, 84, .25);
+  font-size: 12px;
+}
+
+@media (max-width: 860px) {
+  .detalhe-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+}

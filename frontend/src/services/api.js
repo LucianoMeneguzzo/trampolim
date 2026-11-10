@@ -26,6 +26,12 @@ export function setSession({ token, userId, name, type }) {
   localStorage.setItem(USER_KEY, JSON.stringify({ userId, name, type }))
 }
 
+// Atualiza o que fica guardado do usuário (ex.: o nome, depois de editar o perfil)
+export function atualizarUsuarioDaSessao(alteracoes) {
+  const raw = localStorage.getItem(USER_KEY)
+  if (raw) localStorage.setItem(USER_KEY, JSON.stringify({ ...JSON.parse(raw), ...alteracoes }))
+}
+
 export function clearSession() {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)

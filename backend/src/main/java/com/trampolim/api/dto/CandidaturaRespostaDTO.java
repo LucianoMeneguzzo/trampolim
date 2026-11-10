@@ -11,12 +11,14 @@ public class CandidaturaRespostaDTO {
     private LocalDateTime dataCandidatura;
     private String nomeCandidato;
     private String emailCandidato;
+    private Long candidatoId;
+    private Long desafioId;
     private String tituloDesafio;
     private String linkEnvio;
     private LocalDateTime dataEnvio;
     private String repoLinguagem;
     private LocalDateTime repoUltimoCommit;
-    private AvaliacaoRespostaDTO avaliacao; // só vem preenchida em GET /api/candidaturas/{id}, depois da avaliação
+    private AvaliacaoRespostaDTO avaliacao; // preenchida no detalhe e em "minhas candidaturas", depois da avaliação
 
     public CandidaturaRespostaDTO() {}
 
@@ -32,6 +34,7 @@ public class CandidaturaRespostaDTO {
         if (candidatura.getCandidato() != null) {
             this.nomeCandidato = candidatura.getCandidato().getName();
             this.emailCandidato = candidatura.getCandidato().getEmail();
+            this.candidatoId = candidatura.getCandidato().getId();
         } else {
             this.nomeCandidato = "Desconhecido";
             this.emailCandidato = "Desconhecido";
@@ -39,6 +42,7 @@ public class CandidaturaRespostaDTO {
 
         if (candidatura.getDesafio() != null) {
             this.tituloDesafio = candidatura.getDesafio().getTitulo();
+            this.desafioId = candidatura.getDesafio().getId();
         } else {
             this.tituloDesafio = "Desafio Desconhecido";
         }
@@ -56,6 +60,8 @@ public class CandidaturaRespostaDTO {
     public LocalDateTime getDataCandidatura() { return dataCandidatura; }
     public String getNomeCandidato() { return nomeCandidato; }
     public String getEmailCandidato() { return emailCandidato; }
+    public Long getCandidatoId() { return candidatoId; }
+    public Long getDesafioId() { return desafioId; }
     public String getTituloDesafio() { return tituloDesafio; }
     public String getLinkEnvio() { return linkEnvio; }
     public LocalDateTime getDataEnvio() { return dataEnvio; }

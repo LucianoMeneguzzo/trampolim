@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import App from '../../App'
-import { logarComo, mockFetch } from '../../test/utils'
+import { logarComo, mockApi, mockFetch } from '../../test/utils'
 
 function renderTela() {
   return render(
@@ -19,6 +19,64 @@ afterEach(() => {
   localStorage.clear()
   vi.useRealTimers()
   vi.unstubAllGlobals()
+})
+
+function renderEdicao(id = 3) {
+  return render(
+    <MemoryRouter initialEntries={[`/business/challenge/${id}/edit`]}>
+      <App />
+    </MemoryRouter>
+  )
+}
+
+const EXISTENTE = {
+  id: 3, titulo: 'API de pedidos', descricao: 'A loja precisa sair da planilha.', tecnologias: 'Java, Spring Boot',
+  nivel: 'AVANCADO', prazo: '2030-12-31', vagas: 5, empresa: 'Loja Horizonte',
+}
+
+describe('PostarDesafio editando', () => {
+  it('preenche o formulário com o desafio e salva com PUT', async () => {
+    const fetch = mockApi({
+      'GET /api/desafios/3': [200, EXISTENTE],
+      'PUT /api/desafios/3': [200, { ...EXISTENTE, titulo: 'API de pedidos v2' }],
+    })
+    renderEdicao()
+
+    expect(await screen.findByDisplayValue('API de pedidos')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Edite o desafio' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Prazo')).toHaveValue('2030-12-31')
+    expect(screen.getByRole('button', { name: 'Remover Spring Boot' })).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Título do desafio'), { target: { value: 'API de pedidos v2' } })
+    fireEvent.click(screen.getByRole('button', { name: /Salvar alterações/ }))
+
+    expect(await screen.findByText('Alterações salvas')).toBeInTheDocument()
+    const put = fetch.mock.calls.find(([, opcoes]) => opcoes.method === 'PUT')
+    expect(JSON.parse(put[1].body)).toEqual({
+      titulo: 'API de pedidos v2', descricao: 'A loja precisa sair da planilha.', tecnologias: 'Java, Spring Boot',
+      nivel: 'AVANCADO', prazo: '2030-12-31', vagas: 5, empresa: 'Loja Horizonte',
+    })
+  })
+
+  it('explica quando outro mentor tenta salvar', async () => {
+    mockApi({
+      'GET /api/desafios/3': [200, EXISTENTE],
+      'PUT /api/desafios/3': [403, { erro: 'Só o mentor que publicou o desafio pode alterá-lo.' }],
+    })
+    renderEdicao()
+
+    await screen.findByDisplayValue('API de pedidos')
+    fireEvent.click(screen.getByRole('button', { name: /Salvar alterações/ }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Só o mentor que publicou pode editar este desafio.')
+  })
+
+  it('avisa quando o desafio não existe', async () => {
+    mockApi({ 'GET /api/desafios/3': [404, { erro: 'Desafio não encontrado.' }] })
+    renderEdicao()
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não encontramos este desafio.')
+  })
 })
 
 describe('PostarDesafio', () => {

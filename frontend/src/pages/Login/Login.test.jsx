@@ -53,6 +53,18 @@ describe('Login', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('E-mail ou senha inválidos.')
     expect(localStorage.getItem('token')).toBeNull()
   })
+
+  it('avisa quando o back bloqueia por excesso de tentativas', async () => {
+    mockFetch([429, { erro: 'Muitas tentativas. Aguarde alguns minutos e tente de novo.' }])
+    renderEm('/login')
+
+    preencher('E-mail', 'rafael@trampolim.dev')
+    preencher('Senha', 'errada123')
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Muitas tentativas. Aguarde alguns minutos')
+    expect(screen.getByRole('button', { name: 'Entrar' })).toBeEnabled()
+  })
 })
 
 describe('Cadastro', () => {

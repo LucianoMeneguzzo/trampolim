@@ -50,5 +50,7 @@ export function mensagemDeErro(err) {
   if (err.status === 401) return 'E-mail ou senha inválidos.'
   if (err.status === 409) return 'Esse e-mail já está cadastrado. Tente entrar na sua conta.'
   if (err.status === 400) return err.message
+  // O back bloqueia depois de várias tentativas seguidas (senha errada ou cadastros demais)
+  if (err.status === 429) return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.'
   return 'Algo deu errado. Tente de novo em instantes.'
 }

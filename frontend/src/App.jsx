@@ -5,12 +5,13 @@ import Home             from './pages/Home/Home'
 import Login            from './pages/Login/Login'
 import Cadastro         from './pages/Cadastro/Cadastro'
 import PerfilAluno      from './pages/PerfilAluno/PerfilAluno'
-import PesquisarDesafio from './pages/PesquisarDesafio/PesquisarDesafio'
+import DetalheDesafio   from './pages/DetalheDesafio/DetalheDesafio'
 import Desafio          from './pages/Desafio/Desafio'
 import EnviarDesafio    from './pages/EnviarDesafio/EnviarDesafio'
 import PerfilEmpresa    from './pages/PerfilEmpresa/PerfilEmpresa'
 import PostarDesafio    from './pages/PostarDesafio/PostarDesafio'
 import AvaliarDesafio   from './pages/AvaliarDesafio/AvaliarDesafio'
+import Metricas         from './pages/Metricas/Metricas'
 
 function StudentLayout() {
   return <Outlet />
@@ -22,16 +23,18 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Cadastro />} />
+      <Route path="/metricas" element={<Metricas />} />
 
-      {/* DEBUG */}
+      {/* Atalho para a lista de desafios */}
       <Route path="/desafios" element={<Navigate to="/student/search" replace />} />
 
-      {/* Área do aluno: navegar pelos desafios e ver perfil é público; enviar projeto exige login de aluno */}
+      {/* Área do aluno: lista, detalhe e portfólio são públicos; o próprio perfil e o envio exigem login de aluno */}
       <Route path="/student" element={<StudentLayout />}>
-        <Route path="profile" element={<PerfilAluno />} />
         <Route path="search" element={<Desafio />} />
-        <Route path="challenge/:id" element={<PesquisarDesafio />} />
+        <Route path="challenge/:id" element={<DetalheDesafio />} />
+        <Route path="profile/:id" element={<PerfilAluno />} />
         <Route element={<ProtectedRoute allow={['STUDENT']} />}>
+          <Route path="profile" element={<PerfilAluno />} />
           <Route path="challenge/:id/send-challenge" element={<EnviarDesafio />} />
         </Route>
       </Route>
@@ -40,6 +43,7 @@ export default function App() {
       <Route path="/business" element={<ProtectedRoute allow={['MENTOR']} />}>
         <Route path="profile" element={<PerfilEmpresa />} />
         <Route path="post-challenge" element={<PostarDesafio />} />
+        <Route path="challenge/:id/edit" element={<PostarDesafio />} />
         <Route path="assessment/:id" element={<AvaliarDesafio />} />
       </Route>
 

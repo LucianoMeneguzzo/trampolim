@@ -1,0 +1,31 @@
+.editar-perfil {
+  max-width: 640px;
+  margin: 24px clamp(24px, 4vw, 56px);
+  padding: 22px;
+  border: 1px solid #34363a;
+  border-radius: 12px;
+  background: #202124;
+}
+
+.editar-perfil h2 {
+  margin: 0 0 16px;
+  color: #f4f0e7;
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: -.04em;
+}
+
+.editar-perfil .field label { color: #9a9ca2; }
+.editar-perfil .field-error { color: #f0a58f; }
+
+.editar-perfil-erro {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  color: #f7d9d1;
+  background: rgba(191, 97, 84, .25);
+  font-size: 12px;
+}
+
+.editar-perfil-acoes { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+.editar-perfil .btn:disabled { cursor: not-allowed; opacity: .6; }

@@ -1,0 +1,33 @@
+/* Tela 9 do protótipo, no tema escuro das telas públicas. Prefixo "painel-" porque o CSS do Vite é global. */
+.painel-pad { padding: 0 clamp(24px, 4vw, 56px) 56px; }
+
+.painel-numeros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 15px; }
+
+.painel-numero { padding: 19px; border: 1px solid #34363a; border-radius: 10px; background: #202124; }
+.painel-numero div { color: #9a9ca2; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .07em; }
+.painel-numero strong { display: block; margin-top: 10px; color: #f4f0e7; font-family: var(--display); font-size: 39px; line-height: 1; letter-spacing: -.07em; }
+
+.painel-graficos { display: grid; grid-template-columns: minmax(0, 1.23fr) minmax(260px, .77fr); gap: 15px; }
+
+.painel-card { padding: 21px; border: 1px solid #34363a; border-radius: 10px; background: #202124; }
+.painel-card h2 { margin: 0 0 5px; color: #f4f0e7; font-family: var(--display); font-size: 18px; letter-spacing: -.04em; }
+.painel-card > p:not(.painel-nota) { margin: 0 0 22px; color: #9a9ca2; font-size: 11px; }
+
+.painel-barras { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; height: 190px; padding: 0 3px; border-bottom: 1px solid #34363a; }
+.painel-barra { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; min-width: 0; height: 100%; text-align: center; }
+.painel-barra b { margin-bottom: 5px; color: #c9c6bd; font-family: var(--mono); font-size: 10px; font-weight: 500; }
+.painel-barra i { display: block; flex: 0 1 auto; min-height: 3px; max-height: calc(100% - 40px); border-radius: 5px 5px 0 0; background: linear-gradient(180deg, #efb458, var(--amber)); }
+.painel-barra span { margin-top: 8px; padding-bottom: 6px; color: #9a9ca2; font-family: var(--mono); font-size: 9px; }
+
+.painel-funil { margin-top: 17px; }
+.painel-funil-rotulo { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; color: #b6b4ad; font-size: 11px; }
+.painel-funil-rotulo b { color: #f4f0e7; font-family: var(--mono); font-size: 11px; font-weight: 500; }
+.painel-funil-trilho { height: 8px; overflow: hidden; border-radius: 99px; background: #34363a; }
+.painel-funil-trilho div { height: 100%; border-radius: inherit; background: var(--sage); }
+.painel-funil-trilho div.ambar { background: var(--amber); }
+
+.painel-nota { margin: 20px 0 0; padding: 13px; border-radius: 7px; color: #bcd6ca; background: rgba(107, 144, 128, .18); font-size: 11px; line-height: 1.5; }
+
+@media (max-width: 860px) {
+  .painel-numeros, .painel-graficos { grid-template-columns: minmax(0, 1fr); }
+}

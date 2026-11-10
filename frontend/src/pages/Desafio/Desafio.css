@@ -351,3 +351,8 @@
   margin-left: clamp(24px, 4vw, 56px);
   margin-right: clamp(24px, 4vw, 56px);
 }
+/* As telas públicas usam esta mesma barra do topo: no celular ela quebra em duas linhas */
+@media (max-width: 640px) {
+  .topbar { flex-wrap: wrap; }
+  .top-actions { flex-wrap: wrap; }
+}

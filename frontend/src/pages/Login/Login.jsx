@@ -84,7 +84,7 @@ export default function Login() {
           </button>
 
           <p className="form-footnote">
-            Ainda não participa?{' '}<button type="button" className="text-button" onClick={() => navigate('/register')}>Criar minha conta</button>
+            Ainda não participa?{' '}<button type="button" className="text-button" onClick={() => navigate('/register', { state: location.state })}>Criar minha conta</button>
           </p>
         </form>
       </div>

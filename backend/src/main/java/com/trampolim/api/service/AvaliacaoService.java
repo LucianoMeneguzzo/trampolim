@@ -20,13 +20,15 @@ public class AvaliacaoService {
     private final CandidaturaRepository candidaturaRepository;
     private final CandidaturaService candidaturaService;
     private final UserService userService;
+    private final NotificacaoService notificacoes;
 
     public AvaliacaoService(AvaliacaoRepository avaliacaoRepository, CandidaturaRepository candidaturaRepository,
-                            CandidaturaService candidaturaService, UserService userService) {
+                            CandidaturaService candidaturaService, UserService userService, NotificacaoService notificacoes) {
         this.avaliacaoRepository = avaliacaoRepository;
         this.candidaturaRepository = candidaturaRepository;
         this.candidaturaService = candidaturaService;
         this.userService = userService;
+        this.notificacoes = notificacoes;
     }
 
     // Regras: 1) só o mentor dono do desafio avalia; 2) precisa ter projeto enviado; 3) uma avaliação por entrega
@@ -54,7 +56,10 @@ public class AvaliacaoService {
         candidatura.setStatus("AVALIADO");
         candidaturaRepository.save(candidatura);
 
-        // TODO (Ismael): disparar o e-mail avisando o aluno
-        return avaliacaoRepository.save(avaliacao);
+        Avaliacao salva = avaliacaoRepository.save(avaliacao);
+
+        User aluno = candidatura.getCandidato();
+        notificacoes.entregaAvaliada(aluno.getEmail(), aluno.getName(), candidatura.getDesafio().getTitulo(), dto.getNota(), aluno.getId());
+        return salva;
     }
 }

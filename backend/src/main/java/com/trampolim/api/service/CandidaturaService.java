@@ -3,6 +3,7 @@ package com.trampolim.api.service;
 import com.trampolim.api.dto.CandidaturaDTO;
 import com.trampolim.api.dto.CandidaturaRespostaDTO;
 import com.trampolim.api.dto.EnvioDTO;
+import com.trampolim.api.entity.Avaliacao;
 import com.trampolim.api.entity.Candidatura;
 import com.trampolim.api.entity.Challenge;
 import com.trampolim.api.entity.User;
@@ -11,11 +12,16 @@ import com.trampolim.api.repository.AvaliacaoRepository;
 import com.trampolim.api.repository.CandidaturaRepository;
 import com.trampolim.api.repository.ChallengeRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -25,13 +31,18 @@ public class CandidaturaService {
     private final ChallengeRepository challengeRepository;
     private final AvaliacaoRepository avaliacaoRepository;
     private final UserService userService;
+    private final GitHubService gitHubService;
+    private final NotificacaoService notificacoes;
 
     public CandidaturaService(CandidaturaRepository candidaturaRepository, ChallengeRepository challengeRepository,
-                              AvaliacaoRepository avaliacaoRepository, UserService userService) {
+                              AvaliacaoRepository avaliacaoRepository, UserService userService, GitHubService gitHubService,
+                              NotificacaoService notificacoes) {
         this.candidaturaRepository = candidaturaRepository;
         this.challengeRepository = challengeRepository;
         this.avaliacaoRepository = avaliacaoRepository;
         this.userService = userService;
+        this.gitHubService = gitHubService;
+        this.notificacoes = notificacoes;
     }
 
     public Candidatura aplicarParaDesafio(CandidaturaDTO dto) {
@@ -45,13 +56,29 @@ public class CandidaturaService {
             throw ApiException.conflict("Você já se candidatou para este desafio.");
         }
 
+        if ("FECHADO".equals(desafio.getStatus())) {
+            throw ApiException.badRequest("As inscrições deste desafio estão fechadas.");
+        }
+        if (desafio.getPrazo() != null && desafio.getPrazo().isBefore(LocalDate.now())) {
+            throw ApiException.badRequest("O prazo deste desafio já terminou.");
+        }
+        if (desafio.getVagas() != null && candidaturaRepository.countByDesafioId(desafio.getId()) >= desafio.getVagas()) {
+            throw ApiException.conflict("As vagas deste desafio acabaram.");
+        }
+
         Candidatura candidatura = new Candidatura();
         candidatura.setCandidato(candidato);
         candidatura.setDesafio(desafio);
         candidatura.setStatus("PENDENTE");
         candidatura.setDataCandidatura(LocalDateTime.now());
 
-        return candidaturaRepository.save(candidatura);
+        Candidatura salva = candidaturaRepository.save(candidatura);
+
+        User mentor = desafio.getCriador();
+        if (mentor != null) {
+            notificacoes.novaInscricao(mentor.getEmail(), mentor.getName(), candidato.getName(), desafio.getTitulo());
+        }
+        return salva;
     }
 
     // Só o mentor que publicou o desafio vê quem se inscreveu
@@ -72,11 +99,35 @@ public class CandidaturaService {
         Candidatura candidatura = buscarComDetalhes(candidaturaId);
         exigirDonoDoDesafio(candidatura.getDesafio(), userService.getAuthenticatedUser());
 
+        // Com o projeto enviado, a inscrição segue para a avaliação e não volta atrás
+        if (candidatura.getLinkEnvio() != null) {
+            throw ApiException.conflict("Esta inscrição já tem projeto enviado. Agora ela só pode ser avaliada.");
+        }
+
         candidatura.setStatus(novoStatus);
-        return candidaturaRepository.save(candidatura);
+        Candidatura salva = candidaturaRepository.save(candidatura);
+
+        User aluno = candidatura.getCandidato();
+        notificacoes.inscricaoDecidida(aluno.getEmail(), aluno.getName(), candidatura.getDesafio().getTitulo(), "APROVADO".equals(novoStatus));
+        return salva;
     }
 
-    // Aluno envia o link do repositório. A validação na API do GitHub (linguagem, último commit) entra aqui depois.
+    // Inscrições do aluno logado, com a avaliação de cada uma quando já houver
+    @Transactional(readOnly = true)
+    public List<CandidaturaRespostaDTO> listarMinhasCandidaturas() {
+        Long alunoId = userService.getAuthenticatedUser().getId();
+
+        Map<Long, Avaliacao> avaliacoes = avaliacaoRepository.findAllByCandidatoId(alunoId).stream()
+                .collect(Collectors.toMap(a -> a.getCandidatura().getId(), Function.identity()));
+
+        return candidaturaRepository.findAllByCandidatoId(alunoId).stream()
+                .map(c -> new CandidaturaRespostaDTO(c, avaliacoes.get(c.getId())))
+                .toList();
+    }
+
+    // Aluno envia o link do repositório e o back confirma na API do GitHub que ele existe.
+    // Fora de transação: a consulta externa não deve segurar uma conexão do banco enquanto espera.
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Candidatura enviarProjeto(Long candidaturaId, EnvioDTO dto) {
         Candidatura candidatura = buscarComDetalhes(candidaturaId);
         User aluno = userService.getAuthenticatedUser();
@@ -88,12 +139,22 @@ public class CandidaturaService {
             throw ApiException.badRequest("Esta inscrição não aceita mais envios.");
         }
 
-        String link = dto.getLinkEnvio().trim().replaceFirst("^(https?://)?(www\\.)?", "https://");
-        candidatura.setLinkEnvio(link.replaceAll("/$", ""));
+        String link = dto.getLinkEnvio().trim().replaceFirst("^(https?://)?(www\\.)?", "https://").replaceAll("/$", "");
+        GitHubService.Repositorio repositorio = gitHubService.consultarRepositorio(link);
+
+        candidatura.setLinkEnvio(link);
+        candidatura.setRepoLinguagem(repositorio.linguagem());
+        candidatura.setRepoUltimoCommit(repositorio.ultimoCommit());
         candidatura.setDataEnvio(LocalDateTime.now());
         candidatura.setStatus("ENVIADO");
 
-        return candidaturaRepository.save(candidatura);
+        candidaturaRepository.save(candidatura);
+
+        User mentor = candidatura.getDesafio().getCriador();
+        if (mentor != null) {
+            notificacoes.projetoEnviado(mentor.getEmail(), mentor.getName(), aluno.getName(), candidatura.getDesafio().getTitulo(), candidatura.getId());
+        }
+        return candidatura;
     }
 
     // Quem pode ver: o mentor dono do desafio ou o próprio aluno inscrito

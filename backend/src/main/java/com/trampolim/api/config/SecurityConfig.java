@@ -20,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -39,6 +40,10 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
+    // O console do H2 só existe em desenvolvimento; no perfil de produção fica desligado
+    @Value("${spring.h2.console.enabled:false}")
+    private boolean consoleH2Ligado;
+
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                           CustomUserDetailsService customUserDetailsService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
@@ -50,7 +55,18 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults()) // usa o bean corsConfigurationSource abaixo
-                .headers(headers -> headers.frameOptions(frame -> frame.disable())) // necessário pro H2 Console
+                .headers(headers -> {
+                    // O Spring Security já manda X-Content-Type-Options, Cache-Control e, em HTTPS, o HSTS
+                    headers.referrerPolicy(referrer -> referrer.policy(ReferrerPolicy.NO_REFERRER));
+                    headers.permissionsPolicyHeader(permissoes -> permissoes.policy("camera=(), microphone=(), geolocation=()"));
+                    if (consoleH2Ligado) {
+                        headers.frameOptions(frame -> frame.sameOrigin()); // o H2 Console usa frames da própria origem
+                    } else {
+                        // A API só devolve JSON: nenhuma página pode carregar scripts dela nem colocá-la num frame
+                        headers.frameOptions(frame -> frame.deny());
+                        headers.contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'none'; frame-ancestors 'none'"));
+                    }
+                })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Públicas
@@ -58,10 +74,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll() // a hospedagem confere se o back está de pé
 
-                        // Desafios
-                        .requestMatchers(HttpMethod.GET, "/api/desafios", "/api/desafios/*").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/desafios").hasRole("MENTOR")
+                        // Desafios: ver é público; publicar, editar, fechar e apagar é do mentor
+                        .requestMatchers(HttpMethod.GET, "/api/desafios/meus").hasRole("MENTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/desafios", "/api/desafios/*").permitAll()
+                        .requestMatchers("/api/desafios/**").hasRole("MENTOR")
 
                         // Candidaturas
                         .requestMatchers(HttpMethod.POST, "/api/candidaturas").hasRole("STUDENT")
@@ -69,7 +87,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/candidaturas/*/avaliacao").hasRole("MENTOR")
                         .requestMatchers(HttpMethod.PATCH, "/api/candidaturas/*/status").hasRole("MENTOR")
                         .requestMatchers(HttpMethod.GET, "/api/candidaturas/desafio/*").hasRole("MENTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/candidaturas/minhas").hasRole("STUDENT")
                         .requestMatchers(HttpMethod.GET, "/api/candidaturas/**").authenticated()
+
+                        // Perfil público e métricas abrem sem login; /me é sempre do usuário logado
+                        .requestMatchers("/api/usuarios/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/usuarios/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/metricas").permitAll()
 
                         .anyRequest().authenticated()
                 )

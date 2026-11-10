@@ -128,8 +128,8 @@ export default function AvaliarDesafio() {
           <div className="area-empty" role="alert">
             <h2>Entrega indisponível</h2>
             <p>{erroCarregar}</p>
-            <button type="button" className="btn btn-dark" onClick={() => navigate('/business/post-challenge')}>
-              Voltar para a área do mentor
+            <button type="button" className="btn btn-dark" onClick={() => navigate('/business/profile')}>
+              Voltar para o meu perfil
             </button>
           </div>
         )}
@@ -144,6 +144,11 @@ export default function AvaliarDesafio() {
                 <div>
                   <h2>{entrega.nomeCandidato}</h2>
                   <p>Inscrição em “{entrega.tituloDesafio}” {textoInscricao(diasEntre(entrega.dataCandidatura))}</p>
+                  {entrega.candidatoId && (
+                    <button type="button" className="area-link" onClick={() => navigate(`/student/profile/${entrega.candidatoId}`)}>
+                      Ver portfólio de {primeiroNome}
+                    </button>
+                  )}
                 </div>
               </div>
 
