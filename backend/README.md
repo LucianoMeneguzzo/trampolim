@@ -40,14 +40,16 @@ cp .env.example .env
 2. Edite o `.env` com suas credenciais do Supabase:
 
 ```env
-DB_URL=jdbc:postgresql://db.xxxxx.supabase.co:5432/postgres
-DB_USERNAME=postgres
+DB_URL=jdbc:postgresql://aws-0-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+DB_USERNAME=postgres.xxxxx
 DB_PASSWORD=sua_senha
 JWT_SECRET=uma_chave_muito_segura_aqui
 JWT_EXPIRATION=86400000
 CORS_ALLOWED_ORIGINS=http://localhost:5173
 GITHUB_TOKEN=opcional
 ```
+
+Os dados do banco estão no Supabase, em **Connect > Session pooler**. Para a `JWT_SECRET`, gere um valor com `openssl rand -hex 32`.
 
 3. Rode a aplicação:
 
@@ -56,6 +58,25 @@ GITHUB_TOKEN=opcional
 ```
 
 > ⚠️ O arquivo `.env` está no `.gitignore` e **nunca deve ser commitado**.
+
+## 🚢 Produção
+
+Ao publicar, defina `SPRING_PROFILES_ACTIVE=prod`. Esse perfil usa o `application-prod.properties`:
+
+- não cria os dados de exemplo e desliga o console do H2 e o log de SQL;
+- **não sobe** se `DB_URL` não apontar para um PostgreSQL, se a `JWT_SECRET` faltar, tiver menos de 32 caracteres ou for a do `.env.example`, ou se `CORS_ALLOWED_ORIGINS` estiver vazia. O erro no log diz o que falta;
+- lê o IP real de quem chamou, mesmo atrás do proxy da hospedagem.
+
+| Variável | Para que serve |
+|---|---|
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Banco PostgreSQL |
+| `JWT_SECRET` | Chave que assina os tokens (32 caracteres ou mais) |
+| `JWT_EXPIRATION` | Validade do token em milissegundos (padrão: 24 horas) |
+| `CORS_ALLOWED_ORIGINS` | Endereços do front que podem chamar a API, separados por vírgula |
+| `GITHUB_TOKEN` | Opcional: evita o limite de 60 consultas por hora na API do GitHub |
+| `PORT` | Porta do servidor (padrão: 8080). As hospedagens definem sozinhas |
+
+`GET /actuator/health` responde `{"status":"UP"}` quando o back e o banco estão de pé. É o único endereço de monitoramento exposto.
 
 ## 🔐 Autenticação
 
@@ -71,6 +92,14 @@ Para obter o token, use a rota `POST /api/auth/login`.
 |---|---|
 | Sem token, token inválido ou expirado em rota protegida | `401 { "erro": "Faça login para continuar." }` |
 | Logado, mas com o perfil errado (ex.: aluno criando desafio) | `403 { "erro": "Seu perfil não tem permissão para esta ação." }` |
+| Tentativas demais de login ou de cadastro | `429 { "erro": "Muitas tentativas. Aguarde alguns minutos e tente de novo." }` |
+
+### Limite de tentativas
+
+- **Login:** 5 senhas erradas para o mesmo e-mail, vindas do mesmo IP, bloqueiam novas tentativas por 15 minutos. Acertar a senha zera a contagem. Há também um teto de 50 erros por IP, para quem testa uma lista de e-mails.
+- **Cadastro:** no máximo 20 tentativas por hora a partir do mesmo IP.
+
+Os números ficam no `application.properties` (`app.limite.*`). A contagem fica na memória do back: ao reiniciar, zera.
 
 O front em `http://localhost:5173` já pode chamar a API. Para liberar outros endereços, use a variável `CORS_ALLOWED_ORIGINS`.
 
@@ -102,6 +131,7 @@ O campo `type` aceita apenas: `MENTOR` ou `STUDENT`. A senha precisa ter de 8 a 
 - `201` com o usuário criado (sem a senha)
 - `400` campo inválido, ex.: `{ "password": "A senha precisa ter entre 8 e 72 caracteres" }`
 - `409` `{ "erro": "Este e-mail já está cadastrado." }`
+- `429` cadastros demais a partir do mesmo IP
 
 ---
 
@@ -128,7 +158,7 @@ POST /api/auth/login
 }
 ```
 
-E-mail ou senha errados: `401 { "erro": "E-mail ou senha inválidos." }`
+E-mail ou senha errados: `401 { "erro": "E-mail ou senha inválidos." }`. Depois de 5 erros seguidos: `429`.
 
 ---
 
@@ -381,7 +411,7 @@ PATCH /api/candidaturas/{id}/status
 }
 ```
 
-O campo `status` aceita apenas: `APROVADO` ou `REJEITADO`.
+O campo `status` aceita apenas: `APROVADO` ou `REJEITADO`. Inscrição rejeitada não aceita envio. Depois que o aluno envia o projeto, a decisão não muda mais (`409`).
 
 ---
 
@@ -425,7 +455,7 @@ Validação de campos (`400`):
 { "desafioId": "O ID do desafio é obrigatório" }
 ```
 
-Demais erros (`400`, `401`, `403`, `404`, `409`, `500`):
+Demais erros (`400`, `401`, `403`, `404`, `409`, `429`, `500`):
 
 ```json
 { "erro": "Mensagem explicando o problema" }
@@ -438,24 +468,25 @@ cd backend
 ./mvnw test
 ```
 
-O projeto possui 40 testes automatizados cobrindo as principais regras de negócio. O relatório de cobertura fica em `target/site/jacoco/index.html`.
+O projeto possui 58 testes automatizados cobrindo as principais regras de negócio e de segurança. O GitHub Actions roda todos a cada Pull Request. O relatório de cobertura fica em `target/site/jacoco/index.html`.
 
 ## 📂 Estrutura do projeto
 
 ```
 backend/
 ├── src/main/java/com/trampolim/api/
-│   ├── config/          # SecurityConfig e DataSeeder
+│   ├── config/          # SecurityConfig, DataSeeder e ChecagemDeProducao
 │   ├── controller/      # Controllers REST
 │   ├── dto/             # Data Transfer Objects
 │   ├── entity/          # Entidades JPA
 │   ├── exception/       # Tratamento global de exceções
 │   ├── repository/      # Repositórios Spring Data
-│   ├── security/        # Filtros JWT e provedores
+│   ├── security/        # Filtro JWT e limite de tentativas
 │   ├── service/         # Lógica de negócio
 │   └── Application.java # Classe principal
 ├── src/main/resources/
-│   └── application.properties
+│   ├── application.properties       # desenvolvimento
+│   └── application-prod.properties  # o que muda em produção
 ├── .env.example         # Modelo de variáveis de ambiente
 └── pom.xml
 ```
@@ -463,7 +494,7 @@ backend/
 ## 🛠️ Tecnologias
 
 - Java 21
-- Spring Boot 3.3.4
+- Spring Boot 3.5.16
 - Spring Security com JWT
 - Spring Data JPA
 - PostgreSQL (produção) / H2 (desenvolvimento)

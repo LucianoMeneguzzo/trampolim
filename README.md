@@ -11,13 +11,15 @@ Plataforma que conecta aluno e mentor através de desafios práticos reais. O al
 - **Banco de dados:** PostgreSQL (Supabase); H2 em memória para rodar local e nos testes
 - **Autenticação:** JWT via Spring Security
 - **APIs externas:** GitHub API (valida o repositório enviado pelo aluno), serviço de e-mail (notificações, ainda não implementado)
+- **Infraestrutura:** GitHub Actions (testes a cada Pull Request)
 
 ## Estrutura do repositório
 
 ```
-/backend    → API em Spring Boot
-/frontend   → aplicação React
-/docs       → plano técnico, modelo de dados, wireframes
+/backend            → API em Spring Boot
+/frontend           → aplicação React
+/docs               → plano técnico, modelo de dados, wireframes
+.github/workflows   → testes automáticos a cada Pull Request
 ```
 
 ## Como rodar localmente
@@ -64,7 +66,7 @@ Navegador (React + Vite)  --HTTP/JSON + token JWT-->  API (Spring Boot)  --JPA--
 - **Inscrição e envio:** o aluno se inscreve e envia o link do repositório, validado na API do GitHub (existe, é público, linguagem e último commit).
 - **Avaliação:** o mentor dono do desafio dá nota de 0 a 10 e feedback.
 - **Perfil do aluno:** página pública em `/student/profile/:id`, sem login e sem e-mail, que funciona como portfólio. O próprio aluno edita os dados e acompanha as inscrições.
-- **Perfil do mentor:** desafios publicados, inscrições de cada um e atalho para avaliar.
+- **Perfil do mentor:** desafios publicados, inscrições de cada um, aprovação ou recusa de inscrição e atalho para avaliar.
 - **Painel de métricas:** totais, inscrições por mês e funil da inscrição à avaliação, em `/metricas`.
 
 **Ainda não implementado:** e-mail avisando o aluno sobre a avaliação e o mentor sobre nova inscrição.
@@ -76,6 +78,17 @@ Navegador (React + Vite)  --HTTP/JSON + token JWT-->  API (Spring Boot)  --JPA--
 - **Permissão em duas camadas:** o `SecurityConfig` confere o perfil e os services conferem se o desafio é mesmo daquele mentor, o que impede um mentor de avaliar a entrega de outro.
 - **Roda sem configuração:** sem o `backend/.env`, o backend usa H2 com dados de exemplo, então qualquer pessoa do time testa sem precisar da senha do banco.
 - **Testes sem dependência externa:** usam banco em memória e um servidor local no lugar do GitHub.
+
+## Segurança
+
+- **Senhas e segredos:** senhas gravadas só como hash BCrypt. Senha do banco e chave do JWT ficam em variáveis de ambiente, nunca no repositório.
+- **Freio contra força bruta:** cinco senhas erradas bloqueiam o login daquele e-mail por 15 minutos, e o cadastro tem limite por IP. Quem passa do limite recebe `429`.
+- **Perfil de produção:** com `SPRING_PROFILES_ACTIVE=prod`, o back-end desliga os dados de exemplo, o console do H2 e o log de SQL. Nesse perfil o back-end se recusa a subir sem banco PostgreSQL, sem `JWT_SECRET` ou sem `CORS_ALLOWED_ORIGINS`.
+- **Content-Security-Policy no front:** o navegador só executa scripts do próprio site e só conversa com a API. Isso protege o token de login, que fica no `localStorage`.
+- **Cabeçalhos de segurança** na API e no site, e erros que nunca mostram detalhes internos.
+- **Testes automáticos a cada Pull Request:** o GitHub Actions roda os testes do back e o lint, os testes e o build do front.
+
+Limites conhecidos: o token vale 24 horas e não pode ser cancelado antes; não há recuperação de senha nem confirmação de e-mail; qualquer pessoa pode se cadastrar como mentor.
 
 ## Documentação
 

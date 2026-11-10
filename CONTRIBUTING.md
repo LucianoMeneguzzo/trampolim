@@ -28,8 +28,9 @@ Nunca commitar direto na `main`. Toda mudança entra por Pull Request, mesmo as 
    git push origin feature/nome-da-tarefa
    ```
 5. Abre um Pull Request no GitHub, da tua branch pra `main`.
-6. Pelo menos uma pessoa da mesma frente revisa antes de aprovar (back revisa back, front revisa front).
-7. Depois de aprovado, mergeia e apaga a branch.
+6. O GitHub roda os testes sozinho (aba **Checks** do PR). Com um X vermelho, abra o detalhe, corrija e suba de novo.
+7. Pelo menos uma pessoa da mesma frente revisa antes de aprovar (back revisa back, front revisa front).
+8. Depois de aprovado e com os testes verdes, mergeia e apaga a branch.
 
 ## Prefixos de commit
 

@@ -13,6 +13,8 @@ npm run dev
 
 A API é lida de `VITE_API_URL` (padrão: `http://localhost:8080`). Para outro endereço, copie `.env.example` para `.env`.
 
+O valor entra no momento do `npm run build`: o Vite grava o endereço dentro do JavaScript gerado. Ao publicar, defina `VITE_API_URL` antes do build.
+
 ## Comandos
 
 | Comando | O que faz |
@@ -39,6 +41,12 @@ A API é lida de `VITE_API_URL` (padrão: `http://localhost:8080`). Para outro e
 | `/business/post-challenge` | Publicar desafio | Mentor |
 | `/business/challenge/:id/edit` | Editar desafio | Mentor |
 | `/business/assessment/:id` | Avaliar entrega | Mentor |
+
+## Publicação e segurança
+
+- `npm run build` gera o site em `dist/`. No mesmo passo, o `vite.config.js` escreve no `index.html` uma Content-Security-Policy: o navegador só executa scripts do próprio site e só conversa com o endereço de `VITE_API_URL`.
+
+Se uma tela nova precisar carregar algo de outro site (uma fonte, uma imagem, outra API), inclua o endereço na lista do `vite.config.js`. Sem isso o navegador bloqueia, e o erro aparece no console.
 
 ## Organização
 

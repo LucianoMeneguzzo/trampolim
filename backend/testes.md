@@ -33,6 +33,7 @@ Este guia contém todos os comandos para testar os endpoints da API.
 | `PUT` | `/api/candidaturas/{id}/envio` | Aluno envia link do projeto | Apenas `STUDENT` (dono da candidatura) |
 | `PATCH` | `/api/candidaturas/{id}/status` | Aprovar ou rejeitar candidatura | Apenas `MENTOR` dono do desafio |
 | `POST` | `/api/candidaturas/{id}/avaliacao` | Mentor avalia a entrega | Apenas `MENTOR` (criador do desafio) |
+| `GET` | `/actuator/health` | Diz se o back está de pé | Público |
 
 ---
 
@@ -127,14 +128,16 @@ curl -i -X GET http://localhost:8080/api/candidaturas/1 -H "Authorization: Beare
 
 **Aprovar candidatura (Apenas MENTOR):**
 
+Use a candidatura criada no Passo 4 (com os dados de exemplo, é a de id 3). As candidaturas 1 e 2 já têm projeto enviado, e depois do envio a decisão não muda mais (409).
+
 ```bash
-curl -i -X PATCH http://localhost:8080/api/candidaturas/1/status -H "Content-Type: application/json" -H "Authorization: Bearer TOKEN_MENTOR" -d '{"status": "APROVADO"}'
+curl -i -X PATCH http://localhost:8080/api/candidaturas/3/status -H "Content-Type: application/json" -H "Authorization: Bearer TOKEN_MENTOR" -d '{"status": "APROVADO"}'
 ```
 
-**Rejeitar candidatura (teste alternativo — candidatura rejeitada não aceita mais envio, então use esta só depois do Passo 6 ou em outra candidatura):**
+**Rejeitar candidatura (teste alternativo: candidatura rejeitada não aceita envio; para voltar atrás, aprove de novo):**
 
 ```bash
-curl -i -X PATCH http://localhost:8080/api/candidaturas/1/status -H "Content-Type: application/json" -H "Authorization: Bearer TOKEN_MENTOR" -d '{"status": "REJEITADO"}'
+curl -i -X PATCH http://localhost:8080/api/candidaturas/3/status -H "Content-Type: application/json" -H "Authorization: Bearer TOKEN_MENTOR" -d '{"status": "REJEITADO"}'
 ```
 
 ---
@@ -289,6 +292,32 @@ curl -i -X GET http://localhost:8080/api/usuarios/me
 
 *Esperado: HTTP 401 com `{ "erro": "Faça login para continuar." }`.*
 
+### Teste J: Limite de tentativas de login (deve retornar 429)
+
+Rode o comando abaixo 6 vezes. As 5 primeiras respondem 401; a sexta, 429.
+
+```bash
+curl -i -X POST http://localhost:8080/api/auth/login -H "Content-Type: application/json" -d '{"email": "student@trampolim.local", "password": "senha-errada"}'
+```
+
+*Resposta esperada na sexta vez:*
+
+```json
+{
+  "erro": "Muitas tentativas. Aguarde alguns minutos e tente de novo."
+}
+```
+
+O bloqueio dura 15 minutos para esse e-mail, a partir do seu IP. Reiniciar o backend zera a contagem.
+
+### Teste K: O back está de pé (deve retornar 200)
+
+```bash
+curl -i -X GET http://localhost:8080/actuator/health
+```
+
+*Esperado: HTTP 200 com `{ "status": "UP" }`.*
+
 ---
 
 ## 🖥️ Console do H2 (apenas quando rodando sem `.env`)
@@ -318,3 +347,4 @@ Tabelas disponíveis: `usuarios`, `desafios`, `candidaturas`, `avaliacoes`.
 - [ ] Candidatura duplicada é rejeitada
 - [ ] Avaliação duplicada é rejeitada
 - [ ] Nota fora de 0 a 10 é rejeitada
+- [ ] A sexta senha errada seguida retorna 429
