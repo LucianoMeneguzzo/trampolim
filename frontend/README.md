@@ -48,6 +48,8 @@ O valor entra no momento do `npm run build`: o Vite grava o endereço dentro do 
 
 Se uma tela nova precisar carregar algo de outro site (uma fonte, uma imagem, outra API), inclua o endereço na lista do `vite.config.js`. Sem isso o navegador bloqueia, e o erro aparece no console.
 
+Para publicar: o `Dockerfile` e o `nginx.conf` montam a imagem usada pelo `docker-compose.yml` da raiz, e o `render.yaml` da raiz publica o site no Render.
+
 ## Organização
 
 - `src/pages`: uma pasta por tela, com o `.jsx`, o `.css` e o teste.

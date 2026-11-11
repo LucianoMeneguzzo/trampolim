@@ -11,15 +11,17 @@ Plataforma que conecta aluno e mentor através de desafios práticos reais. O al
 - **Banco de dados:** PostgreSQL (Supabase); H2 em memória para rodar local e nos testes
 - **Autenticação:** JWT via Spring Security
 - **APIs externas:** GitHub API (valida o repositório enviado pelo aluno), e-mail por SMTP (avisos de inscrição, entrega e avaliação)
-- **Infraestrutura:** GitHub Actions (testes a cada Pull Request)
+- **Infraestrutura:** Docker e Docker Compose, GitHub Actions (testes a cada Pull Request), Render (publicação)
 
 ## Estrutura do repositório
 
 ```
-/backend            → API em Spring Boot
-/frontend           → aplicação React
-/docs               → plano técnico, modelo de dados, wireframes
-.github/workflows   → testes automáticos a cada Pull Request
+/backend             → API em Spring Boot
+/frontend            → aplicação React
+/docs                → plano técnico, modelo de dados, wireframes
+docker-compose.yml   → sobe banco, back e front com um comando
+render.yaml          → receita de publicação no Render
+.github/workflows    → testes automáticos a cada Pull Request
 ```
 
 ## Como rodar localmente
@@ -44,6 +46,44 @@ npm run dev
 - Testes: `./mvnw test` no backend e `npm test` no front-end.
 - Rotas da API e quem pode acessar cada uma: [backend/README.md](backend/README.md).
 - Cobertura de testes: `npm run coverage` no front-end; no backend, `./mvnw test` gera `target/site/jacoco/index.html`.
+
+## Como rodar com Docker
+
+Sobe o banco PostgreSQL, o back-end e o front-end juntos, do jeito que vão para produção. Precisa do [Docker Desktop](https://www.docker.com/products/docker-desktop/) aberto.
+
+```
+cp .env.example .env
+```
+
+Abra o `.env` e preencha `POSTGRES_PASSWORD` e `JWT_SECRET`. Para gerar cada valor, use `openssl rand -hex 32` no Git Bash. Depois:
+
+```
+docker compose up --build
+```
+
+Abra http://localhost:5173. Aqui o banco começa vazio, sem os dados de exemplo: crie uma conta de mentor e uma de aluno pela tela de cadastro. `Ctrl+C` para tudo, e `docker compose down -v` apaga também os dados do banco.
+
+## Publicação (deploy)
+
+O arquivo [render.yaml](render.yaml) descreve os dois serviços no [Render](https://render.com): o back-end, criado a partir do `backend/Dockerfile`, e o front-end, como site estático. O banco é o PostgreSQL do Supabase.
+
+1. No Supabase, clique em **Connect** e copie os dados do **Session pooler**. A URL do banco fica assim: `jdbc:postgresql://HOST:5432/postgres?sslmode=require`. O usuário tem o formato `postgres.xxxxx`.
+2. No Render, entre com a conta do GitHub, escolha **New > Blueprint** e selecione este repositório.
+3. Preencha o que o Render perguntar:
+
+   | Variável | Valor |
+   |---|---|
+   | `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | dados do Supabase |
+   | `CORS_ALLOWED_ORIGINS` | endereço do front, como `https://trampolim.onrender.com` |
+   | `VITE_API_URL` | endereço do back, como `https://trampolim-api.onrender.com` |
+
+   A `JWT_SECRET` é sorteada e guardada pelo próprio Render.
+4. Depois de criado, confira no painel o endereço real de cada serviço. Se o Render tiver acrescentado letras ao nome, corrija `CORS_ALLOWED_ORIGINS` e `VITE_API_URL` e publique de novo com **Manual Deploy**.
+5. Teste: `https://ENDERECO-DO-BACK/actuator/health` deve responder `{"status":"UP"}`.
+
+Variáveis opcionais, que podem ser acrescentadas depois em **Environment** no serviço do back-end: `GITHUB_TOKEN` e as `MAIL_*` dos avisos por e-mail. O plano gratuito do Render bloqueia as portas 25, 465 e 587, então o servidor de e-mail precisa aceitar outra, como a 2525.
+
+No plano gratuito o back-end dorme depois de 15 minutos sem uso, e a primeira chamada seguinte leva cerca de um minuto. Antes de apresentar, abra o site com alguns minutos de antecedência.
 
 ## Arquitetura
 
@@ -85,7 +125,7 @@ Navegador (React + Vite)  --HTTP/JSON + token JWT-->  API (Spring Boot)  --JPA--
 - **Perfil de produção:** com `SPRING_PROFILES_ACTIVE=prod`, o back-end desliga os dados de exemplo, o console do H2 e o log de SQL. Nesse perfil o back-end se recusa a subir sem banco PostgreSQL, sem `JWT_SECRET` ou sem `CORS_ALLOWED_ORIGINS`.
 - **Content-Security-Policy no front:** o navegador só executa scripts do próprio site e só conversa com a API. Isso protege o token de login, que fica no `localStorage`.
 - **Cabeçalhos de segurança** na API e no site, e erros que nunca mostram detalhes internos.
-- **Testes automáticos a cada Pull Request:** o GitHub Actions roda os testes do back e o lint, os testes e o build do front.
+- **Testes automáticos a cada Pull Request:** o GitHub Actions roda os testes do back, o lint, os testes e o build do front, e monta as imagens Docker.
 
 Limites conhecidos: o token vale 24 horas e não pode ser cancelado antes; não há recuperação de senha nem confirmação de e-mail; qualquer pessoa pode se cadastrar como mentor.
 
