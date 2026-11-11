@@ -55,3 +55,13 @@ jobs:
         run: npm run coverage
       - name: Build de produção
         run: npm run build
+
+  docker:
+    name: Imagens Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Imagem do back-end
+        run: docker build -t trampolim-api ./backend
+      - name: Imagem do front-end
+        run: docker build -t trampolim-web ./frontend

@@ -1,0 +1,67 @@
+# Receita de publicação no Render (https://render.com): cria o back-end e o front-end de uma vez.
+# No painel do Render: New > Blueprint > escolha este repositório. O passo a passo está no README.
+#
+# O banco continua sendo o PostgreSQL do Supabase.
+# Os valores marcados com "sync: false" são segredos ou endereços: o Render pergunta na hora de criar.
+
+services:
+  # ---------- Back-end: usa o backend/Dockerfile ----------
+  - type: web
+    name: trampolim-api
+    runtime: docker
+    plan: free # dorme depois de 15 minutos sem uso; a primeira chamada depois disso leva cerca de 1 minuto
+    region: virginia
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    buildFilter:
+      paths:
+        - backend/**
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JWT_SECRET
+        generateValue: true # o Render sorteia uma chave de 256 bits e guarda só lá
+      - key: DB_URL # jdbc:postgresql://...pooler.supabase.com:5432/postgres?sslmode=require
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS # endereço do front, ex.: https://trampolim.onrender.com
+        sync: false
+      - key: GITHUB_TOKEN # opcional
+        sync: false
+
+  # ---------- Front-end: site estático gerado pelo Vite ----------
+  - type: web
+    name: trampolim
+    runtime: static
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: ./frontend/dist
+    buildFilter:
+      paths:
+        - frontend/**
+    envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
+      - key: VITE_API_URL # endereço do back-end, ex.: https://trampolim-api.onrender.com
+        sync: false
+    # As rotas do React (ex.: /student/search) não existem como arquivo: quem responde é o index.html
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()

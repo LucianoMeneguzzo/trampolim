@@ -59,9 +59,13 @@ Os dados do banco estão no Supabase, em **Connect > Session pooler**. Para a `J
 
 > ⚠️ O arquivo `.env` está no `.gitignore` e **nunca deve ser commitado**.
 
+### Opção 3: Docker
+
+O `docker-compose.yml` da raiz sobe banco, back e front juntos. Veja o [README principal](../README.md#como-rodar-com-docker).
+
 ## 🚢 Produção
 
-Ao publicar, defina `SPRING_PROFILES_ACTIVE=prod`. Esse perfil usa o `application-prod.properties`:
+A imagem Docker (`backend/Dockerfile`) já sobe com `SPRING_PROFILES_ACTIVE=prod`. Esse perfil usa o `application-prod.properties`:
 
 - não cria os dados de exemplo e desliga o console do H2 e o log de SQL;
 - **não sobe** se `DB_URL` não apontar para um PostgreSQL, se a `JWT_SECRET` faltar, tiver menos de 32 caracteres ou for a do `.env.example`, ou se `CORS_ALLOWED_ORIGINS` estiver vazia. O erro no log diz o que falta;
@@ -511,6 +515,7 @@ backend/
 │   ├── application.properties       # desenvolvimento
 │   └── application-prod.properties  # o que muda em produção
 ├── .env.example         # Modelo de variáveis de ambiente
+├── Dockerfile           # Imagem de produção
 └── pom.xml
 ```
 

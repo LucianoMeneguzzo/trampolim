@@ -1,0 +1,7 @@
+# O que NÃO entra na imagem Docker do back-end
+target
+.env
+.env.*
+*.md
+Dockerfile
+.dockerignore

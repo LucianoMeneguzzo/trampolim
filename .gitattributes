@@ -1,0 +1,4 @@
+# O mvnw e os scripts .sh rodam dentro do Linux (Docker e GitHub Actions).
+# Com isto eles ficam com fim de linha LF mesmo quando o repositório é baixado no Windows.
+backend/mvnw text eol=lf
+*.sh text eol=lf
