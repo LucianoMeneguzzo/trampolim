@@ -4,6 +4,10 @@ Plataforma que conecta aluno e mentor através de desafios práticos reais. O al
 
 > Projeto final da Trilha Dev. Full Stack 2026 — +praTi & Codifica
 
+**Acesse o projeto publicado:** https://trampolim-vs34.onrender.com
+
+A hospedagem é gratuita e o servidor dorme quando fica sem uso. Na primeira visita, os dados podem levar cerca de um minuto para aparecer.
+
 ## Stack
 
 - **Front-end:** React
@@ -80,6 +84,8 @@ O arquivo [render.yaml](render.yaml) descreve os dois serviços no [Render](http
    A `JWT_SECRET` é sorteada e guardada pelo próprio Render.
 4. Depois de criado, confira no painel o endereço real de cada serviço. Se o Render tiver acrescentado letras ao nome, corrija `CORS_ALLOWED_ORIGINS` e `VITE_API_URL` e publique de novo com **Manual Deploy**.
 5. Teste: `https://ENDERECO-DO-BACK/actuator/health` deve responder `{"status":"UP"}`.
+
+Hoje o projeto está publicado assim: o site em https://trampolim-vs34.onrender.com e a API em https://trampolim-api-o2dm.onrender.com. Cada merge na `main` publica de novo, sozinho.
 
 Variáveis opcionais, que podem ser acrescentadas depois em **Environment** no serviço do back-end: `GITHUB_TOKEN` e as `MAIL_*` dos avisos por e-mail. O plano gratuito do Render bloqueia as portas 25, 465 e 587, então o servidor de e-mail precisa aceitar outra, como a 2525.
 
