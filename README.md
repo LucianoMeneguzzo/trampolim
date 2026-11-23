@@ -144,14 +144,12 @@ Limites conhecidos: o token vale 24 horas e não pode ser cancelado antes; não 
 
 | Pessoa | Frente |
 |---|---|
-| Pelegrino | Banco de dados + API de Desafios |
-| Ismael | API de Inscrições, Avaliação e integração GitHub |
-| João Lucas | Autenticação + infraestrutura |
-| Luiz | Telas de Desafios |
-| Silvia | Telas de Autenticação e Perfil |
-| Andrius | Tela de Envio |
-| Rogério | Tela de Avaliação |
-| Luciano | Home/landing + Painel de métricas + coordenação |
+| João Lucas Frota Aguiar | Telas de Login e Cadastro, logo e estrutura do front-end (rotas, CSS global, Vitest) |
+| Antenor Pelegrino Filho | Banco de dados e API em Spring Boot: autenticação JWT, desafios, candidaturas e avaliação |
+| Andrius Lopes | Tela de envio do desafio e área do estudante |
+| Silvia Amélia Abe Buzatto | Telas de perfil do aluno e perfil da empresa |
+| Luiz do Nascimento | Tela de desafios e sua conexão com o back-end |
+| Luciano Meneguzzo da Silva Báo | Coordenação, Home, telas do mentor, integração front e back, métricas, e-mail e deploy |
 
 ## Critérios de avaliação
 
